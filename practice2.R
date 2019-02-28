@@ -9,12 +9,11 @@ class(df1)
 str(df1)
 
 data
+class(data)
 df2 = data[1:10, 1:6]
 df2
-class(data)
 df3 = data[1:10, c(1:3, 7,8)]
 df3
-cbind(df2, df3)
 df4 = data[10:19, 1:6]
 df4
 rbind(df4, df2)
@@ -26,8 +25,12 @@ lst1
 lst1$a
 str(lst1)
 
+# row수가 반드시 같지 않아도 됨
 lst2 = list(a=1:3, b=c(4,'5','6',7,8))
 lst2
+# row수가 반드시 같아야 함
+dataframelst2 = data.frame(a=1:3, b=c(4,5,'6'))
+dataframelst2
 str(lst2)
 names(lst2)
 
@@ -75,3 +78,62 @@ dft
 
 1:5
 as.factor(1:5)
+
+#trythis ####
+df2 = data[1:10, 1:6]
+df2
+df3 = data[1:10, c(1:3, 7,8)]
+df3
+try1 = cbind(df2, df3)
+try1 = try1[-(7:9)]
+try1
+
+try1_2 = cbind(df2, df3[4:5])
+try1_2
+
+#2
+class(bindcols) #data.frame
+
+cols = colnames(try1_2)
+cols
+
+try2 = bindcols[, c(cols[1:4], '과학','수학','예체','영어')]
+try2
+
+# built-in dataset #############
+
+data()
+dr = data()$result
+dim(dr)
+head(dr)
+colnames(dr)
+class(dr)
+# matrix상태라서 dr$items불가
+dr[, 'Item'] #OK
+
+data("AirPassengers") #AirPassengers가 메모리에 올라감(변수처럼 쓸 수 있음)
+class(AirPassengers) #time series
+AirPassengers
+dim(AirPassengers)
+
+data('trees')
+trees
+class(trees)
+head(trees)
+
+month.name
+month.abb
+pi
+
+ls(pattern = 'm')
+ls(pattern = 'Air')
+
+# package ####
+install.packages('data.table')
+
+#data.table ####
+library('data.table') #import의 개념
+start = Sys.time()
+read.csv('data/성적.csv')
+# fread('data/성적.csv') fread가 더 빠름 (data.table이 제공하는 fread()함수)
+Sys.time() - start

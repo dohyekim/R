@@ -113,3 +113,5 @@ fnmatrix= function (mtrx,col, val){
 m4 = fnmatrix(m4,10,10)
 m4 = fnmatrix(m4,20,20)
 m4
+df10 = as.data.frame(m4)
+df10
