@@ -92,12 +92,12 @@ try1_2 = cbind(df2, df3[4:5])
 try1_2
 
 #2
-class(bindcols) #data.frame
+class(try1) #data.frame
 
 cols = colnames(try1_2)
 cols
 
-try2 = bindcols[, c(cols[1:4], '과학','수학','예체','영어')]
+try2 = try1[, c(cols[1:4], '과학','수학','예체','영어')]
 try2
 
 # built-in dataset #############

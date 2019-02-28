@@ -8,7 +8,7 @@ factor(3, levels=1:5, labels=LETTERS[1:5])
 
 v1 = c(5,3,1)
 v1
-class(v1)
+class(v1) #numeric
 v1[1] + v1[3]
 summary(v1)
 v1[4] = 4
@@ -42,7 +42,7 @@ m1 = matrix(c('A','F','G','D','C','B'), nrow=3, ncol=2, byrow=F)
 m1
 
 length(LETTERS)
-# m2=matrix(LETTERS, ncol=5) --> number of alphabet:26
+# m2=matrix(LETTERS, ncol=5) --> the number of alphabet:26
 m2 = matrix(c(LETTERS,1,2,3,4), nrow=6, byrow=F)
 m2
 
