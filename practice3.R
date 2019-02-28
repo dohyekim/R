@@ -128,3 +128,33 @@ aggregate(data=data[data$국어>=80,], cbind(국어,평균)~반, mean)
 
 read.csv('data/meltop10022.csv')
 options(encoding = 'utf-8')
+
+# ggplot ####
+# install.packages("ggplot2")
+library()
+library(ggplot2)
+
+data$pass=ifelse(data$평균>=60, T, F)
+head(data)
+data[data$pass,]
+
+data$scout = ifelse(data$pass == T, ifelse(data$성별=='남','BS','GS'),'')
+
+# trythi4-1 ####
+qplot(data[data$scout !='',]$scout)
+
+# trythis4-2 ####
+
+
+data$학점=ifelse(data$평균>=90,'A',ifelse(data$평균>=80,'B',ifelse(data$평균>=70,'C',ifelse(data$평균>=60,'D','F'))))
+
+#trythis4-3 ####
+qplot(data$학점)
+
+
+
+#mpg data ####
+mpg = as.data.frame(ggplot2::mpg)
+?mpg
+
+#통합연비는 두 연비의 평균 의미
