@@ -156,5 +156,80 @@ qplot(data$학점)
 #mpg data ####
 mpg = as.data.frame(ggplot2::mpg)
 ?mpg
-
+str(mpg)
 #통합연비는 두 연비의 평균 의미
+
+# mpg 데이터에서 통합 연비(도시와(cty) 고속도로(hwy))가 높은 순으로 출력하시오.
+mpg$fuel = (mpg[,'cty'] + mpg[,'hwy'])/2
+mpg$fule = NULL
+head(mpg)
+mpg[order(-(mpg$fuel)),]
+
+# mpg 데이터에서 생산연도별 연료 종류에 따른 통합연비를 연도순으로 출력하시오.
+# > aggregate(data=data, 수학~반, mean)
+# aggregate(data=data, cbind(국어,영어,수학)~반, mean)
+head(mpg)
+mpg[,c('year','fl')]
+
+s = aggregate(data=mpg, fl~year, mean)
+str(mpg)
+summary(mpg)
+dim(mpg)
+y = mpg[order(mpg$year,mpg$fl),]
+head(y)
+aggregate(data=y, fuel~(fl), mean)
+?aggregate
+aggregate(data=y, fl~year)
+
+y19 = mpg[mpg$year==1999 ,c('year', 'fl', 'fuel')]
+aggregate(data=y19, fuel~fl, mean)
+y08 = mpg[mpg$year==2008, c('year','fl','fuel')]
+aggregate(data=y08, fuel~fl, mean)
+
+
+# column
+# manufacturer: 제조사
+# displ: 배기량(displacement)
+# trans: 변속기 종류
+# cyl: 실린더 개수
+# drv: 구동방식(drive wheel)
+# cty: 도시 연비
+# hwy: 고속도로 연비
+# fl: 연료종류(fuel)
+
+#midwest ####
+#midwest 데이터를 data.frame으로 불러온 후, 데이터의 특징을 설명하시오.
+
+middf = as.data.frame(midwest)
+head(middf)
+str(middf)
+
+#poptotal 변수(컬럼)를 total로, popasian 변수를 asian으로 변수명을 변경하는 코드를 작성하시오. 
+total = middf$poptotal
+middf$total = total
+colnames(middf)
+middf=middf[,-5]
+str(middf)
+#middf$poptotal = NULL
+
+asian = middf$popasian
+middf$asian = asian
+colnames(middf)
+middf=middf[,-9]
+str(middf)
+#middf$popasian = NULL
+
+
+#total, asian 변수를 이용해 `전체 인구 대비 아시아계 인구 백분율` 파생변수(asianpct)를 추가하고, 히스토그램을 그려, 도시들이 어떻게 분포하는지 설명하시오.
+middf$asianpct = (middf[,'asian'] / middf[,'total']) * 100
+middf
+hist(middf$asianpct)
+asiancity = middf[,c('area','asianpct')]
+qplot(middf$asianpct)
+
+asiancity
+colnames(middf)
+
+?hist
+middf$state
+middf$asianpct
