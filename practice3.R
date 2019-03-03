@@ -159,13 +159,13 @@ mpg = as.data.frame(ggplot2::mpg)
 str(mpg)
 #통합연비는 두 연비의 평균 의미
 
-# mpg 데이터에서 통합 연비(도시와(cty) 고속도로(hwy))가 높은 순으로 출력하시오.
+# mpg 데이터에서 통합 연비(도시와(cty) 고속도로(hwy))가 높은 순으로 출력하시오. ####
 mpg$fuel = (mpg[,'cty'] + mpg[,'hwy'])/2
 mpg$fule = NULL
 head(mpg)
 mpg[order(-(mpg$fuel)),]
 
-# mpg 데이터에서 생산연도별 연료 종류에 따른 통합연비를 연도순으로 출력하시오.
+# mpg 데이터에서 생산연도별 연료 종류에 따른 통합연비를 연도순으로 출력하시오. ####
 # > aggregate(data=data, 수학~반, mean)
 # aggregate(data=data, cbind(국어,영어,수학)~반, mean)
 head(mpg)
@@ -198,7 +198,7 @@ aggregate(data=y08, fuel~fl, mean)
 # fl: 연료종류(fuel)
 
 #midwest ####
-#midwest 데이터를 data.frame으로 불러온 후, 데이터의 특징을 설명하시오.
+#midwest 데이터를 data.frame으로 불러온 후, 데이터의 특징을 설명하시오. ####
 
 middf = as.data.frame(midwest)
 head(middf)
@@ -220,10 +220,12 @@ str(middf)
 #middf$popasian = NULL
 
 
-#total, asian 변수를 이용해 `전체 인구 대비 아시아계 인구 백분율` 파생변수(asianpct)를 추가하고, 히스토그램을 그려, 도시들이 어떻게 분포하는지 설명하시오.
+#total, asian 변수를 이용해 `전체 인구 대비 아시아계 인구 백분율` 파생변수(asianpct)를 추가하고, 히스토그램을 그려, 도시들이 어떻게 분포하는지 설명하시오. ####
 middf$asianpct = (middf[,'asian'] / middf[,'total']) * 100
 middf
-hist(middf$asianpct)
+hist(middf$asianpct, freq=F)
+middf$asianpct
+
 asiancity = middf[,c('area','asianpct')]
 qplot(middf$asianpct)
 
@@ -233,3 +235,13 @@ colnames(middf)
 ?hist
 middf$state
 middf$asianpct
+
+# 아시아계 인구 백분율(asianpct)의 전체 평균을 구하고, 평균을 초과하면 "lg", 그 외는 "sm"을 부여하는 파생변수(asianrate)를 추가하는 코드를 작성하시오. ####
+
+mean(middf$asianpct)
+middf$asianrate = ifelse(middf$asianpct >= mean(middf$asianpct),"lg","sm")
+head(middf$asianrate)
+
+#"lg"와 "sm"에 해당하는 지역이 얼마나 되는지 빈도 막대그래프(qplot)을 그려보시오.####
+library(ggplot2)
+qplot(middf$asianrate)
