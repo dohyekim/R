@@ -52,18 +52,21 @@ rownames(mtx)
 mtx = read_excel('data/meltop100.xlsx', sheet=1) # default : col_names=T
 mtx = mtx[-(nrow(mtx)), ]
 tail(mtx)
-save(mtx, file="data/meltop100_rmlast.rda") # rda로 저장하는 것은 파일을 쓰는 의미가 아님, 읽을 때 load하면 rad에 있는 변수를 불러옴)
+save(mtx, file="data/meltop100_rmlast.rda") # rda로 저장하는 것은 파일을 쓰는 의미가 아님, 읽을 때 load하면 rda에 있는 변수를 불러옴)
 
 #trythis2 ####
 trycsv = read.csv('data/trycsv')
 trycsv
 save(trycsv, file="data/trycsv.rda")
-rm(trycsv) # have to delete it first as it will automatically generated when loaded
+rm(trycsv) # have to delete it first as it will automatically be generated when loaded
 load("data/trycsv.rda")
 View(trycsv)
 
 #trythis3 ####
 tmp = read.fwf('data/temper.txt', header=F, stringsAsFactor=F, width=c(15,4,68,5,1))
+tmp
+
+
 tmp$V1 = as.character(tmp$V1)
 tmp$V4 = as.character(tmp$V4)
 
@@ -168,6 +171,7 @@ mpg[order(-(mpg$fuel)),]
 # 시험2 mpg 데이터에서 생산연도별 연료 종류에 따른 통합연비를 연도순으로 출력하시오. ####
 
 fperyrfl = aggregate(data=mpg, fuel~(fl+year), mean)
+fperyrfl
 fperyrfl[order(fperyrfl$year),]
 
 #삽질
@@ -219,17 +223,52 @@ asiandensity[order(-(asiandensity$percasian)),]
 #시험4 poptotal 변수(컬럼)를 total로, popasian 변수를 asian으로 변수명을 변경하는 코드를 작성하시오. ####
 colnames(middf)[colnames(middf)=="poptotal"] = "total"
 colnames(middf)[colnames(middf)=="popasian"] = "asian"
-colnames(middf)
+colnames(middf)=="total"
+colnames(middf)[colnames(middf)=="total"] 
 
 ??midwest
 # 시험5 전체 아시아계 인구수와, asian 변수를 이용해 `전체 인구 대비 아시아계 인구 백분율` 파생변수(asianpct)를 추가하고, 히스토그램을 그리시오.####
-
 summedasian = sum(middf$asian)
-middf$asianpct = middf[,'asian'] / summedasian * 100
-
-histdata = middf[,c('asianpct', 'state')]
+midwest$asianpct = middf[,'asian'] / summedasian * 100
+ff = aggregate(data=middf, asianpct~state, mean)
+hist(ff$asianpct)
+histdata = middf[,c('asianpct', 'county')]
 hist(histdata$asianpct)
+histdata$asianpct
+hist(histdata$asianpct)
+aa = histdata[histdata$asianpct <= 5,]
+aa
+hist(aa$asianpct)
+bb = histdata[histdata$asianpct <= 1,]
+bb
+hist(bb$asianpct)
+cc = histdata[histdata$asianpct <= 0.1,]
+hist(cc$asianpct)
 
+dd = histdata[histdata$asianpct <= 0.01,]
+hist(dd$asianpct)
+qplot(dd$asianpct)
+
+boxplot(dd$asianpct)
+
+histdata$asianpct
+data
+a = data$수학
+a
+hist(a)
+
+hist(data$영어)
+qplot(data$영어)
+histdata
+qplot(data$scout)
+qplot(data$pass)
+hist(data$pass)
+summary(data$pass)
+qplot(histdata$asianpct)
+
+
+?hist()
+boxplot(histdata$asianpct)
 # 시험6 ####
 asianperstate= aggregate(data=histdata, asianpct~state, mean)
 asianperstate[order(-asianperstate$asianpct),]
