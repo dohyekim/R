@@ -204,44 +204,29 @@ describe(midwest)
 str(midwest)
 
 middf = as.data.frame(midwest)
-middf$asian
-head(middf)
-str(middf)
-summary(middf)
-??midwest
-middf$asianpct
 
-aggregate(data=middf, popdensity~state,mean)
-aggregate(data=middf, percwhite~state,mean)
-aggregate(data=middf, percblack~state,mean)
-aggregate(data=middf, percasian~state,mean)
-aggregate(data=middf, percamerindan~state,mean)
-aggregate(data=middf, percother~state,mean)
-colnames(middf)
+totaldensity=aggregate(data=middf, popdensity~state,mean)
+totaldensity[order(-(totaldensity$popdensity)),]
+
+asiandensity=aggregate(data=middf, percasian~state,mean)
+asiandensity
+asiandensity[order(-(asiandensity$percasian)),]
 
 #PID는561부터3052까지있다. county는 총 437개가존재한다. state는총5개이다.총 백인의수는 416에서 많게는 32034947명,흑인은0~1317147,인디언은4부터10289,아시아인은0~188565,그외384119,와더불어 비율까지 알 수 있다. 성인의수와대학진학률,전문직,도시거주비율등을알수있다.표준편차가 클수록 kurtosis와skew값도크다. OH-MI-IL-IN-WI순으로인구밀도가높고, 주별평균백인비율이가장높은곳은IN-WI-OH-IL-MI,흑인(IL-OH-MI-IN-WI), 아시아인(IL-WI-MI-OH-IN), 인디언(WI-MI-IN-OH-IL), 그외(IL-MI-OH-WI-IN).
 
 
 
 #시험4 poptotal 변수(컬럼)를 total로, popasian 변수를 asian으로 변수명을 변경하는 코드를 작성하시오. ####
-total = middf$poptotal
-middf$total = total
+colnames(middf)[colnames(middf)=="poptotal"] = "total"
+colnames(middf)[colnames(middf)=="popasian"] = "asian"
 colnames(middf)
-middf=middf[,-5]
-str(middf)
-#middf$poptotal = NULL
 
-asian = middf$popasian
-middf$asian = asian
-colnames(middf)
-middf=middf[,-9]
-str(middf)
-#middf$popasian = NULL
+??midwest
+# 시험5 전체 아시아계 인구수와, asian 변수를 이용해 `전체 인구 대비 아시아계 인구 백분율` 파생변수(asianpct)를 추가하고, 히스토그램을 그리시오.####
 
+summedasian = sum(middf$asian)
+middf$asianpct = middf[,'asian'] / summedasian * 100
 
-# 시험5 total, asian 변수를 이용해 `전체 인구 대비 아시아계 인구 백분율` 파생변수(asianpct)를 추가하고, 히스토그램을 그리시오.
-####
-middf$asianpct = (middf[,'asian'] / middf[,'total']) * 100
 histdata = middf[,c('asianpct', 'state')]
 hist(histdata$asianpct)
 
