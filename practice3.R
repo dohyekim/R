@@ -159,19 +159,19 @@ mpg = as.data.frame(ggplot2::mpg)
 str(mpg)
 #통합연비는 두 연비의 평균 의미
 
-# mpg 데이터에서 통합 연비(도시와(cty) 고속도로(hwy))가 높은 순으로 출력하시오. ####
+# 시험1 mpg 데이터에서 통합 연비(도시와(cty) 고속도로(hwy))가 높은 순으로 출력하시오. ####
 mpg$fuel = (mpg[,'cty'] + mpg[,'hwy'])/2
 mpg$fule = NULL
 head(mpg)
 mpg[order(-(mpg$fuel)),]
 
-# mpg 데이터에서 생산연도별 연료 종류에 따른 통합연비를 연도순으로 출력하시오. ####
-# > aggregate(data=data, 수학~반, mean)
-# aggregate(data=data, cbind(국어,영어,수학)~반, mean)
-head(mpg)
-mpg[,c('year','fl')]
+# 시험2 mpg 데이터에서 생산연도별 연료 종류에 따른 통합연비를 연도순으로 출력하시오. ####
 
-s = aggregate(data=mpg, fl~year, mean)
+fperyrfl = aggregate(data=mpg, fuel~(fl+year), mean)
+fperyrfl[order(fperyrfl$year),]
+
+#삽질
+ordereds
 str(mpg)
 summary(mpg)
 dim(mpg)
@@ -197,14 +197,33 @@ aggregate(data=y08, fuel~fl, mean)
 # hwy: 고속도로 연비
 # fl: 연료종류(fuel)
 
-#midwest ####
-#midwest 데이터를 data.frame으로 불러온 후, 데이터의 특징을 설명하시오. ####
+#시험3 midwest 데이터를 data.frame으로 불러온 후, 데이터의 특징을 설명하시오. ####
+library(psych)
+describe(middf)
+describe(midwest)
+str(midwest)
 
 middf = as.data.frame(midwest)
+middf$asian
 head(middf)
 str(middf)
+summary(middf)
+??midwest
+middf$asianpct
 
-#poptotal 변수(컬럼)를 total로, popasian 변수를 asian으로 변수명을 변경하는 코드를 작성하시오. 
+aggregate(data=middf, popdensity~state,mean)
+aggregate(data=middf, percwhite~state,mean)
+aggregate(data=middf, percblack~state,mean)
+aggregate(data=middf, percasian~state,mean)
+aggregate(data=middf, percamerindan~state,mean)
+aggregate(data=middf, percother~state,mean)
+colnames(middf)
+
+#PID는561부터3052까지있다. county는 총 437개가존재한다. state는총5개이다.총 백인의수는 416에서 많게는 32034947명,흑인은0~1317147,인디언은4부터10289,아시아인은0~188565,그외384119,와더불어 비율까지 알 수 있다. 성인의수와대학진학률,전문직,도시거주비율등을알수있다.표준편차가 클수록 kurtosis와skew값도크다. OH-MI-IL-IN-WI순으로인구밀도가높고, 주별평균백인비율이가장높은곳은IN-WI-OH-IL-MI,흑인(IL-OH-MI-IN-WI), 아시아인(IL-WI-MI-OH-IN), 인디언(WI-MI-IN-OH-IL), 그외(IL-MI-OH-WI-IN).
+
+
+
+#시험4 poptotal 변수(컬럼)를 total로, popasian 변수를 asian으로 변수명을 변경하는 코드를 작성하시오. ####
 total = middf$poptotal
 middf$total = total
 colnames(middf)
@@ -220,28 +239,22 @@ str(middf)
 #middf$popasian = NULL
 
 
-#total, asian 변수를 이용해 `전체 인구 대비 아시아계 인구 백분율` 파생변수(asianpct)를 추가하고, 히스토그램을 그려, 도시들이 어떻게 분포하는지 설명하시오. ####
+# 시험5 total, asian 변수를 이용해 `전체 인구 대비 아시아계 인구 백분율` 파생변수(asianpct)를 추가하고, 히스토그램을 그리시오.
+####
 middf$asianpct = (middf[,'asian'] / middf[,'total']) * 100
-middf
-hist(middf$asianpct, freq=F)
-middf$asianpct
+histdata = middf[,c('asianpct', 'state')]
+hist(histdata$asianpct)
 
-asiancity = middf[,c('area','asianpct')]
-qplot(middf$asianpct)
+# 시험6 ####
+asianperstate= aggregate(data=histdata, asianpct~state, mean)
+asianperstate[order(-asianperstate$asianpct),]
 
-asiancity
-colnames(middf)
-
-?hist
-middf$state
-middf$asianpct
-
-# 아시아계 인구 백분율(asianpct)의 전체 평균을 구하고, 평균을 초과하면 "lg", 그 외는 "sm"을 부여하는 파생변수(asianrate)를 추가하는 코드를 작성하시오. ####
+# 시험7 아시아계 인구 백분율(asianpct)의 전체 평균을 구하고, 평균을 초과하면 "lg", 그 외는 "sm"을 부여하는 파생변수(asianrate)를 추가하는 코드를 작성하시오. ####
 
 mean(middf$asianpct)
 middf$asianrate = ifelse(middf$asianpct >= mean(middf$asianpct),"lg","sm")
 head(middf$asianrate)
 
-#"lg"와 "sm"에 해당하는 지역이 얼마나 되는지 빈도 막대그래프(qplot)을 그려보시오.####
+#시험8 "lg"와 "sm"에 해당하는 지역이 얼마나 되는지 빈도 막대그래프(qplot)을 그려보시오.####
 library(ggplot2)
 qplot(middf$asianrate)
