@@ -276,9 +276,105 @@ asianperstate[order(-asianperstate$asianpct),]
 # 시험7 아시아계 인구 백분율(asianpct)의 전체 평균을 구하고, 평균을 초과하면 "lg", 그 외는 "sm"을 부여하는 파생변수(asianrate)를 추가하는 코드를 작성하시오. ####
 
 mean(middf$asianpct)
-middf$asianrate = ifelse(middf$asianpct >= mean(middf$asianpct),"lg","sm")
+middf$asianrate = ifelse(middf$asianpct > mean(middf$asianpct),"lg","sm")
 head(middf$asianrate)
 
 #시험8 "lg"와 "sm"에 해당하는 지역이 얼마나 되는지 빈도 막대그래프(qplot)을 그려보시오.####
 library(ggplot2)
 qplot(middf$asianrate)
+
+# rep, seq ####
+1:3
+rep(1:3,times=2)
+rep(1:3, each=2)
+rep(1:10, by=2)
+rep(c('I','am'), length.out=7)
+data.frame(customer=rep(c('김일수','김이수'), each=2), menu=rep(c('짜장','짬뽕'),times=2))
+
+-3:5
+5.5:-4.5 # default 1
+seq(5.5,-4.5)
+
+seq(from=1, to=10, by=0.5)
+seq(5.4, -4.5, length.out=10)
+# seed가 같으면 같은 난수가 나옴
+set.seed(100); sample(1:5, size=3)
+
+#runif n
+runif(20)
+t= runif(n=30, min=10, max=20)
+t
+plot(t[order(t)])
+hist(t[order(t)])
+
+# sample ####
+
+sample(1:5, size=3)
+sample(1:5, 3) # size=3
+set.seed(100)
+sample(1:5, size=3)
+
+#sample(size) : n개
+sample(1:5, size=30,replace=T)
+data[sample(1:nrow(data), size=5),]
+data[sample(1:nrow(data),size=5,replace=F),]
+
+data$c1 = sample(c('A','B','O','AB','Others'), size=nrow(data), replace=T)
+head(data)
+colnames(data)[13]='BType'
+data$c1 = sample(c('AA', 'BB'), size=nrow(data), replace=T)
+
+data$c1 = rep(c('AA', 'BB'), size=nrow(data), replace=T)
+nrow(data[data$c1 =="AA",])
+
+set.seed(255)
+smdt = data.frame(stuno=1:5,
+                  Korean=sample(60:100, 5),
+                  English=sample((5:10)*10, 5),
+                  Math=sample(50:100, 5))
+smdt
+
+
+#substring ####
+s = "abc,efg,abc"
+nchar(s)
+toupper(s)
+tolower(s)
+
+substr(s,1,5)  # "abc,e"
+strsplit(s,',') # "abc" "efg" "abc"
+sub('abc','ttt',s) # "ttt,efg,abc"
+gsub('abc','ttt',s) # "ttt,efg,ttt"
+
+s
+sub(pattern='abc/g', replacement='ttt',s)
+# "abc,efg,abc"
+
+d = "first\tsecond\nthird"
+print(d)
+cat(d)
+
+paste('aaa-bbb','ccc-ddd',sep="**")
+paste0('aaa-bbb', 'ccc-ddd')
+paste('aaa-bbb','ccc-ddd')
+
+class(data[1:3, '반'])
+paste(data[1:3, '반'], collapse='**')
+#paste factor를 paste할때는collapse필요
+
+outer(month.abb, 2011:2020, paste, sep='-')
+?outer
+outer(LETTERS,2010:2020, paste0)
+#paste0
+
+grep(pattern='^2.*0$', x=data$학번, value=T)
+grep(pattern='^2.*0$', x=data$학번, value=F)
+#value=T값출력,value=F행의index출력
+
+
+#sub(pattern=..) ####
+ss="abcdTEGwg HWEf"
+sub(pattern='abc/g', replacement='ttt', x=ss)
+ss
+#i 대소문자무시
+#g global
