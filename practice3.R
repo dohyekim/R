@@ -1,3 +1,5 @@
+sys.sleep(10)
+
 # read.delim####
 sepdata = read.delim('data/sep.txt', sep='#')
 sepdata
@@ -326,7 +328,7 @@ data$c1 = sample(c('AA', 'BB'), size=nrow(data), replace=T)
 
 data$c1 = rep(c('AA', 'BB'), size=nrow(data), replace=T)
 nrow(data[data$c1 =="AA",])
-
+data
 set.seed(255)
 smdt = data.frame(stuno=1:5,
                   Korean=sample(60:100, 5),
@@ -376,5 +378,159 @@ grep(pattern='^2.*0$', x=data$학번, value=F)
 ss="abcdTEGwg HWEf"
 sub(pattern='abc/g', replacement='ttt', x=ss)
 ss
-#i 대소문자무시
-#g global
+
+#,반드시있고(+)a이후에올수있는모든문자
+gsub(pattern='[,]+a(.*)', replacement='ttt', x=s)
+
+# install.packages('lubridate')
+library(lubridate)
+
+as.Date('2019-03-04 09:00')
+dt1 = as.POSIXct('2019-03-04 09:00')
+dt1
+seq(dt1, as.POSIXct('2019-04-01'), by='day')
+seq(dt1, as.POSIXct('2019-04-01'), by='2 hour')
+
+ymd('2019/02/28')
+ymd('20190228')
+mdy('02282019')
+dmy('28022019')
+
+year(dt1)
+quarter(dt1)
+
+day(dt1) = 15
+dt1
+
+days_in_month(1:12)
+ddays(10)
+dhours(50)
+duration(1000) #seconds
+round(as.POSIXct('2019-03-05 11:51:42'), 'min')
+round(as.POSIXct('2019-03-05 11:51:02'), 'min')
+
+
+# for loop ####
+for (i in 1:3) {print(i)}
+for(r in 1:nrow(data)) 
+{if (data[r,'scout']=="") 
+    print("None")
+  else 
+  {print(data[r,'scout'])}}
+
+# while ####
+
+i=0
+while(i<10)
+{print(i);
+  i = i + 1}
+
+i=0
+while(TRUE) {
+  i = i + 1
+  if (i %% 2 == 0)
+    next
+  if ( i > 10)
+    break
+  print(i)
+}
+
+1:5
+
+# apply #### (when you want to execute all at once)
+smdt
+smdt[,2:4]
+apply(smdt[,2:4], MARGIN=1, FUN=mean)
+apply(smdt[,2:4], MARGIN=2, FUN=mean)
+apply(smdt[,2:4], MARGIN=2, FUN=quantile)
+
+# lapply ####
+
+apply(smdt[,2:4], MARGIN=2, FUN=mean)
+llll = lapply(smdt[,2:4],FUN=mean)
+llll
+unlist(lapply(smdt[,2:4],FUN=mean))
+llll['Korean']
+
+# sapply ####
+apply(smdt[,2:4], MARGIN=2, FUN=mean)
+sapply(smdt[,2:4], FUN=mean, simplify=T) #알아서margin=2
+sapply(smdt[,2:4], FUN=mean, simplify=F) #lapply
+
+# vapply ####
+vapply(smdt[,2:4], FUN=mean, FUN.VALUE=1) # int/num만취급
+vapply(smdt[,2:4], FUN=mean, FUN.VALUE=10) # same
+vapply(smdt[,2:4], FUN=mean, FUN.VALUE='') # error(chr)
+
+# reshape2 ####
+library(reshape2)
+#가로세로뒤집고싶을때melt->dcast
+#한개의row를여러개로풀고싶을때melt
+
+data.frame(no=1:4, year=2016:2019)
+runif(16)
+round(runif(16), 3)
+round(runif(16), 3)*1000
+matrix(round(runif(16), 3)*1000, ncol=4)
+
+list(NULL,paste0('Q',1:4))
+matrix(round(runif(16), 3)*1000, ncol=4, dimnames=list(NULL,paste0('Q',1:4)))
+
+mtmatrix = matrix(round(runif(16), 3)*1000, ncol=4, dimnames=list(NULL,paste0('Q',1:4)))
+dfsum = cbind( data.frame(no=1:4, year=2016:2019),mtmatrix)
+dfsum
+
+# melt ####
+melt(data=dfsum[,2:6], id.vars="year")
+meltsum = melt(dfsum[,2:6], id.vars="year", variable.name = "Sales")
+head(meltsum)
+
+# dcast(data, <기준컬럼>~<나열컬럼>, value.var=<키 변수 명>) 
+# '~별' 이 기준 컬럼으로 제일 맨 왼쪽에 온다
+# 나열컬럼이 열이 된다
+# value.var = 행렬의 값을 채울 애들
+dcsum= dcast(meltsum, Sales~year, value.var = "value")
+dcsum
+dfsum
+
+# try this 7-1 ####
+# data$group 컬럼에 A조~C조 랜덤으로 160명씩 고르게 분포시키시오.
+
+data$group = sample(rep(paste0(LETTERS[1:3],"조"), times=nrow(data)/3), size=nrow(data))
+head(data)
+nrow(data[data$group=="A조",])
+nrow(data[data$group=="B조",])
+nrow(data[data$group=="C조",])
+
+# try this 7-2 ####
+# fibonacci.R 파일을 작성하고 console에서 실행하시오.
+  
+#try this 7-3 ####
+# apply를 이용하여 smdt에 1. 과목별 (총)평균점수 행을 추가하고, 2. 총점과 평균 변수(컬럼)을 추가하시오.
+
+#1. 과목별 (총)평균점수 행을 추가
+apply(smdt[,2:4], MARGIN=2, FUN=mean)
+smdt[nrow(smdt)+1, 2:4] = apply(smdt[,2:4], MARGIN=2, FUN=mean)
+smdt[nrow(smdt),1] = "계"
+smdt
+
+#2. 총점과 평균 변수(컬럼) 추가
+smdt$"total"=apply(smdt[,2:4], MARGIN=1, FUN=sum)
+smdt$"mean"=apply(smdt[,2:4], MARGIN=1, FUN=mean)
+smdt
+
+# try this 7-4 ####
+#2016~2019년 연도별 1월(Jan) ~ 12월(Dec) 매출액 데이터를 `no year Jan Feb … Dec` 형태로 만든 다음, 아래와 같이 출력하시오.
+ny = data.frame(no=1:4, year=2016:2019)
+ny
+sm = matrix(round(runif(n=4 * 12, min=300, max=700),3)*1000, nrow=4, dimnames = list(NULL, month.abb))
+sm
+salespm = cbind(ny, sm) #sales per month
+salespm
+yms = melt(data=salespm[,2:14], id.vars="year", variable.name="month", value.name="saleamt")
+yms
+
+
+for (i in 1:0){
+  print(i)
+}
