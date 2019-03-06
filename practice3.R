@@ -496,7 +496,7 @@ dfsum
 
 # try this 7-1 ####
 # data$group 컬럼에 A조~C조 랜덤으로 160명씩 고르게 분포시키시오.
-
+data=read.csv('data/성적.csv')
 data$group = sample(rep(paste0(LETTERS[1:3],"조"), times=nrow(data)/3), size=nrow(data))
 head(data)
 nrow(data[data$group=="A조",])
@@ -515,10 +515,19 @@ smdt[nrow(smdt)+1, 2:4] = apply(smdt[,2:4], MARGIN=2, FUN=mean)
 smdt[nrow(smdt),1] = "계"
 smdt
 
+#혹은 rbind
+#정수화
+for (i in 2:4){
+  smdt[,1]  = as.integer(smdt[,])
+}
+  
+
 #2. 총점과 평균 변수(컬럼) 추가
 smdt$"total"=apply(smdt[,2:4], MARGIN=1, FUN=sum)
 smdt$"mean"=apply(smdt[,2:4], MARGIN=1, FUN=mean)
 smdt
+#정수화
+smdt$mean = round(smdt$mean)
 
 # try this 7-4 ####
 #2016~2019년 연도별 1월(Jan) ~ 12월(Dec) 매출액 데이터를 `no year Jan Feb … Dec` 형태로 만든 다음, 아래와 같이 출력하시오.
@@ -548,3 +557,16 @@ switch(2,"red","green","blue")
 x <- switch(4,"red","green","blue")
 x
 
+t = c(5,7,2,4,1,55,61,24)
+t[order(t)]
+
+smdt[order(smdt$mean, -smdt$Korean),]
+
+t
+rev(t)
+sort(t)
+sort(smdt$mean,decreasing=T)
+
+#mising values ####
+t = c(1:5, NA, 7, NA, 9, 10)
+m1=m2=m3=matrix(c(1:3,NA,9:3,NA,1:3),nrow=3)
