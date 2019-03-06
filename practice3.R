@@ -481,6 +481,7 @@ dfsum = cbind( data.frame(no=1:4, year=2016:2019),mtmatrix)
 dfsum
 
 # melt ####
+#(id.vars=year을 첫번째 column으로, 열을 variable컬럼의 row로, data를 value컬럼의 row로)
 melt(data=dfsum[,2:6], id.vars="year")
 meltsum = melt(dfsum[,2:6], id.vars="year", variable.name = "Sales")
 head(meltsum)
@@ -527,6 +528,8 @@ sm = matrix(round(runif(n=4 * 12, min=300, max=700),3)*1000, nrow=4, dimnames = 
 sm
 salespm = cbind(ny, sm) #sales per month
 salespm
+yy=melt(data=salespm[,2:14], id.vars="year")
+yy
 yms = melt(data=salespm[,2:14], id.vars="year", variable.name="month", value.name="saleamt")
 yms
 
@@ -534,3 +537,14 @@ yms
 for (i in 1:0){
   print(i)
 }
+
+# switch ####
+switch("color", "color" = "red", "shape" = "square", "length" = 5)
+
+switch("length", "color" = "red", "shape" = "square", "length" = 5)
+
+switch(2,"red","green","blue")
+
+x <- switch(4,"red","green","blue")
+x
+
