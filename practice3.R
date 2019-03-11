@@ -144,7 +144,7 @@ head(data)
 data[data$pass,]
 
 data$scout = ifelse(data$pass == T, ifelse(data$성별=='남','BS','GS'),'')
-
+data
 # trythi4-1 ####
 qplot(data[data$scout !='',]$scout)
 
@@ -165,7 +165,9 @@ str(mpg)
 #통합연비는 두 연비의 평균 의미
 
 # 시험1 mpg 데이터에서 통합 연비(도시와(cty) 고속도로(hwy))가 높은 순으로 출력하시오. ####
-mpg$fuel = (mpg[,'cty'] + mpg[,'hwy'])/2
+mpg$fuel = (mpg$cty + mpg$hwy)/2
+head(mpg)
+
 mpg$fule = NULL
 head(mpg)
 mpg[order(-(mpg$fuel)),]
@@ -497,6 +499,7 @@ dfsum
 # try this 7-1 ####
 # data$group 컬럼에 A조~C조 랜덤으로 160명씩 고르게 분포시키시오.
 data=read.csv('data/성적.csv')
+data
 data$group = sample(rep(paste0(LETTERS[1:3],"조"), times=nrow(data)/3), size=nrow(data))
 head(data)
 nrow(data[data$group=="A조",])
@@ -570,3 +573,277 @@ sort(smdt$mean,decreasing=T)
 #mising values ####
 t = c(1:5, NA, 7, NA, 9, 10)
 m1=m2=m3=matrix(c(1:3,NA,9:3,NA,1:3),nrow=3)
+
+is.na(t) #FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE FALSE FALSE
+
+table(is.na(t))
+is.na(t)
+t[is.na(t)] # NA인 것들만
+t[!is.na(t)] # NA가 아닌 것들만
+mean(t)
+mean(t, na.rm=T)
+
+t=ifelse(is.na(t),0,t)
+t
+m1
+m1[is.na(m1)]=0
+m1
+
+m2[is.na(m2[,2]),2] = 55
+m2
+is.na(m2[,2])
+
+#dplyr ####
+install.packages('dplyr')
+library('dplyr')
+
+#data$국어 --> data
+attach(data)
+with(data, mean(math))
+detach(data)
+
+data
+
+data = dplyr::rename(data, stuno=학번, cls=반, gen=성별, kor=국어, eng=영어, sci=과학, art=예체, avg=평균, grade=학점)
+colnames(data)
+
+head(data)
+data = dplyr::rename(data, eng=English, sci=Science, kor=Korean, grade=Grade, art=Art)
+data = dplyr::rename(data, cls=class, gen=gender)
+data = dplyr::rename(data, class=반)
+
+data
+
+data[data$group=='C조',]
+data %>% filter(group=='C조')
+data %>% filter(group=='C조' $ math > 90)
+# %in% == or
+data %>% filter(group %in% c('A조','C조'))
+
+# except 반,영어
+data%>% select(-반, -영어)
+data %>% filter(math>95) %>%
+  select(학번,국어,영어,math)
+# %>% \n
+data %>%
+  filter(math > 95) %>% 
+  select(학번, 국어, 영어, math) %>%
+  head
+
+# %>%하면 첫번째인자로앞의data가들어간다고볼수있다
+data %>% rename(Pass=pass)
+mean(data$국어)
+
+#arrange, mutate ####
+
+data %>% arrange(kor)
+data %>% arrange(desc(kor))
+data %>% arrange(math) %>% head
+data %>% arrange(desc(math))%>% head
+data %>% arrange(math,kor,eng) %>% head
+
+data = data %>% mutate(subTotal = kor + eng + math)
+data = data %>% mutate(subTotal =  kor + eng + math, subMean=round((kor+eng+math)/3))
+data = data %>% mutate(subMean=round((kor+eng+math)/3))
+
+data = data %>% mutate(kor_eng = kor + eng) %>% arrange(desc(kor_eng)) %>% head
+
+head(data)
+
+data%>% arrange(math,desc(English)) %>% head
+
+# summarize, group_by ####
+mean(data$math)
+data %>% mean(math)
+data %>% dplyr::summarize(t = mean(math))
+data[data$cls=='죽',]
+data %>% group_by(cls,gen) %>% 
+  summarize(m=mean(math)) 
+
+data %>% group_by(cls) %>% 
+  summarize(mean_math=mean(math))
+summary(data)
+
+# join ####
+dfsum = cbind( data.frame(yno=1:4, year=2016:2019), 
+               matrix(round(runif(16), 3) * 1000, ncol=4, dimnames = list(NULL, paste0('Q', 1:4))))
+dfsum
+sales = cbind( data.frame(no=1:12, year=2016:2019), 
+               matrix(round(runif(144), 3) * 100000, ncol=12, dimnames = list(NULL, month.abb)) )
+sales
+
+left_join(sales, dfsum, by=c('year'='year'))
+left_join(dfsum, sales, by=c('year'='year'))
+right_join(sales,dfsum, by=c('year'='year'))
+
+dfsum
+
+inner_join(sales, dfsum, by=c('year'='year', 'no'='yno'))
+semi_join(sales, dfsum, by=c('year'='year', 'no'='yno'))
+
+# 없는 값은 NA로
+full_join(sales, dfsum, by=c('year'='year', 'no'='yno'))
+# 교집합 제외
+anti_join(sales, dfsum, by=c('no'='yno'))
+
+
+#bind_rows, bind_cols ####
+
+topsales4 = sales[1:4,] %>% select(year,Jan,Apr,Jul,Oct)
+topsales4
+
+top4 = sales[5:8,] %>% select(1:4, year, Jan, Apr, Jul, Oct) %>%
+  rename(yno=no, Q1=Jan, Q2=Apr, Q3=Jul, Q4=Oct)
+top4
+
+dfsum
+topsales4
+top4
+bind_rows(dfsum, topsales4)
+bind_rows(dfsum, top4)
+bind_rows(dfsum, top4, .id='group')
+
+dfsum
+top4
+# column명 자동으로 중복 방지
+bind_cols(dfsum, top4)
+# column명 중복됨
+cbind(dfsum, top4)
+bind_cols(dfsum, top4) %>% select(-yno1, -year1, -Feb)
+
+#trythis 8-1 ####
+# mpg데이터에서 차종(class)가 suv, compact인 자동차의 모델과 연비관련 변수만 출력하세요.
+
+library(ggplot2)
+mpg %>% filter(class %in% c('suv', 'compact')) %>% 
+  select(model, cty, hwy)
+
+#trythis 8-2 ####
+#mpg데이터에서 고속도로연비(hwy) 1 ~ 5위에 해당하는 자동차의 데이터를 출력하세요.
+a = mpg %>% arrange(desc(hwy))
+a[1:5,]
+
+mpg %>% arrange(desc(hwy)) %> %head(5)
+
+#trythis 8-3 ####
+mpg$fuel
+#회사별로 suv 차들의 통합연비(평균) 구해 1 ~ 5위를 출력하세요.
+mpg %>% filter(class=='suv') %>% 
+  group_by(manufacturer) %>% 
+  summarize(avg=mean(fuel)) %>%
+  arrange(desc(avg)) %>%
+  head(5)
+
+#trythis 8-4 ####
+# 다음과 같이 연료별 가격이 정해져 있을 때, mpg에 fl_price라는 컬럼을 추가하세요.
+
+mpg = as.data.frame(ggplot2::mpg)
+mpgprc = data.frame(fl=c('c','d','e','p','r'), type=c('CNG', 'diesel', 'E85', 'Premi', "regular"), price=c(1.33,1.02,0.92,1.99,1.22), stringsAsFactors = F)
+
+mpg = inner_join(mpg, mpgprc, by=c('fl'='fl')) %>% 
+  rename(fl_price=price)
+
+inner_join(mpg, mpgprc, by=c('fl'='fl')) %>% 
+  rename(fl_price=price) %>% head
+
+# plot ####
+data
+
+?points
+
+plot(x=1, y=1)
+plot(x=1:10, y=1:10)
+plot(sin, -pi, pi * 3)
+smdt
+plot(smdt$stuno, smdt$Korean)
+plot(smdt$stuno, smdt$Korean, col='#0000FF')
+
+str(smdt)
+smdt$stuno = as.numeric(smdt$stuno)
+str(smdt)
+
+colors()
+
+#pch : point(점)유형
+#cex : text/symbol size
+#las: label axis style (y축 기준값 모양 - 0: 세로, 1: 가로)
+#mar: margin(bottom, left, top, right)
+#type:graph type (p, l, b, c, o, s)
+#bty: box type(o, L, 7, c, u, ])
+#lty: line type(0, 1: solid, 2: dashed, 3: dotted, 4: dotdash, ...)
+
+plot(x = smdt$stuno, y=smdt$Korean,
+     col='#0000FF',
+     cex=3,
+     las=1,
+     # type='l',
+     xlim=c(0,5.5),
+     ylim=c(60,100),
+     pch=8,
+     xlab='학번', ylab='국어',
+     main = '그래프 타이틀'
+     )
+?type
+
+xl=c(-0.5,5.5)
+yl=c(60,100)
+
+plot(x = smdt$stuno, y=smdt$Korean,
+     col="#00FF00",
+     cex=3,
+     pch=8,
+     xlim=xl,
+     ylim=yl,
+     xlab='학번',
+     ylab='국어,수학',
+     main='우리반 국어/수학 성적')
+
+par(new=T)
+
+plot(x = smdt$stuno, y = smdt$Math,
+     col='#FF0000',
+     cex=3,
+     pch=21,
+     xlim=xl,
+     ylim=yl,
+     xlab='',
+     ylab='')
+
+legend('bottomright',
+       legend=c('국어','수학'),
+       pch=c(8,21),
+       col=c('green', 'red'),
+       bg='gray')
+
+# barplot data must be one of these: vector, matrix, table (ex. If 'cls' only --> it would be vector type, 'cls','gen' --> it would be either matrix or table)
+par(new=F)
+library('dplyr')
+t = data %>% filter(eng>90) %>%
+  select('cls') %>%
+  table
+nrow(t)
+barplot(t,
+        border = 'dark blue',
+        density=50,
+        xlab='학급별 성별',
+        ylab='영어',
+        legend=rownames(t),
+        col=heat.colors(nrow(t))
+                )
+t = data %>% filter(eng > 90) %>% select('cls', 'gen') %>% table
+
+barplot(t,
+          horiz=T,
+          # beside = F,
+          beside=T,
+          border = 'dark blue',
+          density = 50,
+          angle = 15 + 10*1:2,
+          xlab = '학급별 성별', ylab = '영어',
+          legend=rownames(t),
+          col=heat.colors(nrow(t)),
+          xlim=c(0,13),
+          las=1,
+          cex.names=0.8
+        )
+
