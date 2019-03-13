@@ -846,4 +846,285 @@ barplot(t,
           las=1,
           cex.names=0.8
         )
+#boxplot ####
 
+boxplot(data$Korean)
+
+d = data %>% filter(kor > 90) %>%
+  select('cls')
+pie(table(d))
+
+#ggplot2 ####
+
+smdt
+
+smdt1 = smdt[1:5,]
+smdt1
+ggplot() +
+  geom_point(data=smdt1,
+             aes(x=stuno, y=Korean),
+             color='blue', size = 5)
+
+ggplot(data=smdt1) +
+  geom_point(
+             aes(x=stuno, y=Korean),
+             color='blue', size = 5)
+
+ggplot(data=smdt1) +
+  geom_point(
+    aes(stuno, Korean),
+    color='blue', size = 5)
+
+
+ggplot() +
+  geom_point(data=smdt,
+             aes(x=stuno, y=Korean, color='kor'),
+             size = 5)
+
+ggplot() +
+  geom_point(data=smdt,
+             aes(x=stuno, y=Korean, color=stuno),
+             size = 5)
+ggplot() +
+  geom_point(data=smdt,
+             aes(x=stuno, y=Korean, color=stuno),
+             size = 3)
+
+ggplot() +
+  geom_point(data=smdt,
+             aes(x=stuno, y=Korean, color=stuno, size=5))
+
+library('dplyr')
+d = data %>% filter(stuno >= 30000)
+
+ggplot(d, aes(cls, kor)) +
+  geom_point(aes(color=cls, size=kor), 
+             alpha=0.3)
+
+# geom_line() ####
+head(mpg)
+d2 = mpg %>% group_by(manufacturer, displ) %>% 
+  summarise(m1 = mean(cty), m2 = mean(hwy))
+d2
+
+
+ggplot(d2, aes(x=displ)) + 
+  geom_line(aes(y=m1, color='cty'))
+
+ggplot(d2, aes(x=displ)) + 
+  geom_line(aes(y=m1, color='cty')) + 
+  geom_line(aes(y=m2, color='hwy'), size=1) 
+
+ggplot(d2, aes(x=displ)) + 
+  geom_line(aes(y=m1, color='cty')) + 
+  geom_line(aes(y=m2, color='hwy'), size=1) +
+  scale_colour_manual("", breaks = c("cty", "hwy"),
+                      values = c("red", "blue"))
+
+g2 = ggplot(d2, aes(x=displ)) + 
+  geom_line(aes(y=m1, color='cty')) + 
+  geom_line(aes(y=m2, color='hwy'), size=1) +
+  scale_colour_manual("", breaks = c("cty", "hwy"),
+                      values = c("red", "blue")) +
+  xlab("x축") +
+  xlim(1, 8) +
+  scale_y_continuous("y축", limits = c(5, 45))
+g2
+# ylab('y축') + ylim(5,45) == scale_y_continuous('y축', limits = c(5,45))
+
+ggplot(d2, aes(x=displ)) + 
+  geom_line(aes(y=m1, color='cty')) + 
+  geom_line(aes(y=m2, color='hwy'), size=1) +
+  scale_colour_manual("", breaks = c("cty", "hwy"),
+                      values = c("red", "blue")) +
+  xlab("x축") +
+  xlim(1, 8) +
+  scale_y_continuous("y축", limits = c(5, 45)) +
+  labs(title = '타이틀', subtitle = '서브 타이틀') 
+
+# geom_histogram ####
+# x축은 한 개
+
+ggplot(mpg, aes(displ)) +
+  geom_histogram(aes(fill=class), 
+                 binwidth = .3,     # 또는  bins = 5 (5개)
+                 col='black',       # line color
+                 size=.1) +         # line size
+  labs(title = 'Title', subtitle = 'Sub Title')
+
+
+ggplot(mpg, aes(displ)) +
+  geom_histogram(aes(fill=class),
+                 binwidth = .3,
+                 col='black',
+                 size=.1) +
+  labs(title = 'Title', subtitle = 'Sub Title')
+
+# geom_bar ####
+# x축은 한 개
+
+ggplot(mpg, aes(manufacturer)) +
+  geom_bar(aes(fill=class), #fill ==> 기준이 되는 값(class별)
+           width = 0.5) +
+  theme(axis.text.x = element_text(angle=45,       # 글씨의 기울기
+                                   vjust=0.6)) +   # 글씨의 하단 맞춤(띄우기)
+  scale_fill_discrete(name = "class") +      # legend
+  labs(title = 'Title', subtitle = 'Sub Title')
+
+ggplot(mpg, aes(manufacturer)) +
+  geom_bar(aes(fill=class),
+           width = 0.5) +
+  theme(axis.text.x = element_text(angle=45, vjust=0.6)) +
+  scale_fill_discrete(name='Class') +
+  labs(title = 'Bar Title', subtitle = 'Bar Subtitle')
+
+
+# geom_density() ####
+
+ggplot(mpg, aes(cty)) +
+  geom_density(aes(fill=factor(cyl)), alpha=0.8) + #밀도는 연속형이 아니기 때문에 factor여야 함(수치가 아닌 밀도)
+  labs(title="밀도그래프", subtitle = "실린더수에 따른 시내연비의 밀도그래프",
+       caption="Source: ggplot2::mpg",
+       x = "도시 연비",
+       fill = "실린더수")
+
+mpg$cyl
+
+ggplot(mpg, aes(manufacturer)) +
+  geom_bar(aes(fill=class), #fill ==> 기준이 되는 값(class별)
+           width = 0.5) +
+  theme(axis.text.x = element_text(angle=45,       # 글씨의 기울기
+                                   vjust=0.6)) +   # 글씨의 하단 맞춤(띄우기)
+  scale_fill_discrete(name = "class") +      # legend
+  labs(title = 'Title', subtitle = 'Sub Title')
+
+
+ggplot(data, aes(cls)) +
+  geom_bar(aes(fill=grade)) +
+  labs(title="학점 그래프", subtitle = '반별 학점',
+       caption="Grade",
+       x = '반',
+       fill='학점')
+
+
+# install.packages('gridExtra')
+library('gridExtra')
+g3 = ggplot(mpg, aes(manufacturer)) +
+  geom_bar(aes(fill=class),
+           width = 0.7) +
+  theme(axis.text.x = element_text(angle=45,
+                                   vjust=0.6)) +
+  labs(title = 'Title', subtitle = 'Sub Title')
+
+g3 
+
+g4 = ggplot(mpg, aes(cty)) +
+  geom_density(aes(fill=factor(cyl)), alpha=0.8) +
+  labs(title="밀도그래프", subtitle = "실린더수에 따른 시내연비의 밀도그래프",
+       caption="Source: ggplot2::mpg",
+       x = "도시 연비",
+       fill = "실린더수")
+
+g4
+
+x = ggplot(mpg, aes(cty)) 
+x = x + geom_density(aes(fill=factor(cyl)), alpha=0.8) +
+  labs(title="밀도그래프", subtitle = "실린더수에 따른 시내연비의 밀도그래프",
+       caption="Source: ggplot2::mpg",
+       x = "도시 연비",
+       fill = "실린더수")
+x
+
+g2
+
+grid.arrange(g4, g3, ncol=2)
+
+grid.arrange(g4, g3, nrow=2)
+
+grid.arrange(g2, g3, g4, nrow=2)
+
+x = grid.arrange(g2, ncol=1)
+x
+y = grid.arrange(g3, g4, ncol=2)
+grid.arrange(x,y)
+
+#시각화 try1 ####
+# mpg데이터에서 연도별 배기량에 따른 도시/고속도로
+# 연비를 꺽은선으로 그리시오.
+# (단, 2008년은 굵은 선으로 표현하시오)
+
+mpg
+m1 = mpg[,c('year', 'cty', 'hwy', 'displ')]
+m1
+
+m2 = m1[order(m1$year),]
+m2
+
+m21999 = m2[m2$year == 1999, ]
+m22008 = m2[m2$year == 2008, ]
+ggplot() + 
+  geom_line(data = m21999, aes(x=displ, y=cty, color='1999 cty')) + 
+  geom_line(data = m21999, aes(x=displ, y=hwy, color='1999 hwy')) +
+  geom_line(data = m22008, aes(x=displ, y=cty, color='2008 cty'), size=1) +
+  geom_line(data = m22008, aes(x=displ, y=hwy, color='2008 hwy'), size=1) +
+  xlab("배기량(cc)") +
+  ylab("연비M/h") +
+  labs(title = '도시/고속도로 연비', subtitle = '연도별 배기량에 따른 도시/고속도로 연비') 
+  
+#시각화 try2 ####
+# data(성적.csv) 데이터에서 국어 성적이 80점 이상인
+# 학생들의 수를 성비가 보이도록 학급별로 막대그래프를 그리시오.
+
+stukor = data[data$kor>=80,]
+
+ggplot(stukor, aes(cls)) +
+  geom_bar(aes(fill=gen),
+           width=0.5) +
+  scale_fill_discrete(name="성별") +
+  labs(title='국어 우수 학생', subtitle='80점 이상') + 
+  xlab("학급") + ylab('학생수')
+
+#시각화 try3 ####
+# 국어 성적이 95점 이상인 학생들의
+# 점수별 밀도그래프를 그리시오.
+
+stukorA = data[data$kor>=95,]
+stukorA
+
+ggplot(stukorA, aes(kor)) +
+  geom_density(aes(fill=factor(cls)), alpha=0.4) +
+  scale_fill_discrete(name="반") +
+  labs(title='반별 국어 우수 학생', subtitle='국어 성적 A+') + 
+  xlab("성적") + ylab('밀도')
+
+#시각화 try4 ####
+# midwest데이터에서 전체인구와
+# 아시아계 인구의 관계를 알아보기 위한
+# 그래프를 그리시오.
+# (단, 전체인구는 50만명 이하,
+#   아시아계인구는 1만명 이하만 표시되게)
+
+ggplot(data=smdt1) +
+  geom_point(
+    aes(x=stuno, y=Korean),
+    color='blue', size = 5)
+
+
+colnames(midwest)
+
+ggplot() +
+  geom_point(data=smdt,
+             aes(x=stuno, y=Korean),
+             color='blue', size = 5)
+asiatot = midwest %>% filter(poptotal <= 500000 && popasian <= 10000)
+asiatot
+
+ggplot(asiatot) +
+  geom_point(aes(x=state, y=poptotal),
+             color='blue', alpha=0.3) +
+  geom_point(aes(x=state, y=popasian),
+             color='red', alpha=0.3)
+
+ggplot(d, aes(cls, kor)) +
+  geom_point(aes(color=cls, size=kor), 
+             alpha=0.3)
