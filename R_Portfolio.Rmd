@@ -15,7 +15,6 @@ midwest = as.data.frame(ggplot2::midwest)
 
 # save(data, file="data/data.rda")
 load("data/data.rda")
-head(data)
 ```
 
 
@@ -24,21 +23,22 @@ head(data)
 
 
 ```{r}
-m1 = mpg[,c('year', 'cty', 'hwy', 'displ')]
-m1 = m1[order(m1$year),]
+mpg = mpg %>% group_by(year,displ) %>% 
+  summarise(cty = mean(cty), hwy = mean(hwy))
+head(mpg)
 
-m1999 = m1[m1$year == 1999, ]
-m2008 = m1[m1$year == 2008, ]
+mpg_1999 = mpg[mpg$year == 1999, ]
+mpg_2008 = mpg[mpg$year == 2008, ]
+
 ggplot() + 
-  geom_line(data = m1999, aes(x=displ, y=cty, color='1999 cty')) + 
-  geom_line(data = m1999, aes(x=displ, y=hwy, color='1999 hwy')) +
-  geom_line(data = m2008, aes(x=displ, y=cty, color='2008 cty'), size=1) +
-  geom_line(data = m2008, aes(x=displ, y=hwy, color='2008 hwy'), size=1) +
+  geom_line(data = mpg_1999, aes(x=displ, y=cty, color='1999 cty')) + 
+  geom_line(data = mpg_1999, aes(x=displ, y=hwy, color='1999 hwy')) +
+  geom_line(data = mpg_2008, aes(x=displ, y=cty, color='2008 cty'), size=2) +
+  geom_line(data = mpg_2008, aes(x=displ, y=hwy, color='2008 hwy'), size=2) +
   xlab("배기량(cc)") +
-  ylab("연비M/h") +
-  labs(shape="year", title = '도시/고속도로 연비', subtitle = '연도별 배기량에 따른 도시/고속도로 연비')+
+  ylab("연비(M/h)") +
+  labs(shape="year", title = '도시/고속도로 연비', subtitle = '(굵은 선은 2008년)')+
   scale_color_discrete(name="year")
-
 ```
 
 
@@ -48,6 +48,7 @@ ggplot() +
 
 ```{r}
 stukor = data[data$kor>=80,]
+head(data)
 head(stukor)
 
 ggplot(stukor, aes(cls)) +
@@ -83,7 +84,6 @@ ggplot(stukorA, aes(kor)) +
 
 ```{r}
 asiatot = midwest %>% filter(poptotal <= 500000 && popasian <= 10000) %>% select(county, state,poptotal, popasian)
-
 head(asiatot)
 
 graph_1 = ggplot(asiatot) +
