@@ -1060,16 +1060,18 @@ m1
 m2 = m1[order(m1$year),]
 m2
 
-m21999 = m2[m2$year == 1999, ]
-m22008 = m2[m2$year == 2008, ]
+m1999 = m2[m2$year == 1999, ]
+m2008 = m2[m2$year == 2008, ]
 ggplot() + 
-  geom_line(data = m21999, aes(x=displ, y=cty, color='1999 cty')) + 
-  geom_line(data = m21999, aes(x=displ, y=hwy, color='1999 hwy')) +
-  geom_line(data = m22008, aes(x=displ, y=cty, color='2008 cty'), size=1) +
-  geom_line(data = m22008, aes(x=displ, y=hwy, color='2008 hwy'), size=1) +
+  geom_line(data = m1999, aes(x=displ, y=cty, color='1999 cty')) + 
+  geom_line(data = m1999, aes(x=displ, y=hwy, color='1999 hwy')) +
+  geom_line(data = m2008, aes(x=displ, y=cty, color='2008 cty'), size=1) +
+  geom_line(data = m2008, aes(x=displ, y=hwy, color='2008 hwy'), size=1) +
   xlab("배기량(cc)") +
   ylab("연비M/h") +
-  labs(title = '도시/고속도로 연비', subtitle = '연도별 배기량에 따른 도시/고속도로 연비') 
+  labs(shape="year", title = '도시/고속도로 연비', subtitle = '연도별 배기량에 따른 도시/고속도로 연비')+
+  scale_color_discrete(name="year")
+
   
 #시각화 try2 ####
 # data(성적.csv) 데이터에서 국어 성적이 80점 이상인
@@ -1128,3 +1130,7 @@ ggplot(asiatot) +
 ggplot(d, aes(cls, kor)) +
   geom_point(aes(color=cls, size=kor), 
              alpha=0.3)
+
+# R markdown
+#rmd로
+data 
