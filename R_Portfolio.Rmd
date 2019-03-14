@@ -83,7 +83,7 @@ ggplot(stukorA, aes(kor)) +
 
 
 ```{r}
-asiatot = midwest %>% filter(poptotal <= 500000 && popasian <= 10000) %>% select(county, state,poptotal, popasian)
+asiatot = midwest %>% filter(poptotal <= 500000 && popasian <= 10000) %>% select(state,poptotal, popasian)
 head(asiatot)
 
 graph_1 = ggplot(asiatot) +

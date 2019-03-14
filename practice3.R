@@ -1061,27 +1061,24 @@ grid.arrange(x,y)
 # mpg데이터에서 연도별 배기량에 따른 도시/고속도로
 # 연비를 꺽은선으로 그리시오.
 # (단, 2008년은 굵은 선으로 표현하시오)
+asiatot = midwest %>% filter(poptotal <= 500000 && popasian <= 10000) %>% select(state,poptotal, popasian)
+head(asiatot)
 
-save(mpg, file="data/mpg.rda")
+graph_1 = ggplot(asiatot) +
+  geom_point(aes(x=poptotal, y=popasian), color="blue", alpha=0.3) +
+  xlab("아시아 인구") +
+  ylab("전체 인구") +
+  labs(title = '아시아 인구 분포') 
 
-mpg
-m1 = mpg[,c('year', 'cty', 'hwy', 'displ')]
-m1
+graph_2 = ggplot(asiatot) +
+  geom_point(aes(x=state, y=poptotal, color="전체 인구"),alpha=0.3) +
+  geom_point(aes(x=state, y=popasian, color="아시아 인구"),alpha=0.3) +
+  xlab("주(state)") +
+  ylab("전체 인구") +
+  scale_color_discrete(name="인구") +
+  labs(title = '주별 아시아 인구 분포') 
 
-m2 = m1[order(m1$year),]
-m2
-
-m1999 = m2[m2$year == 1999, ]
-m2008 = m2[m2$year == 2008, ]
-ggplot() + 
-  geom_line(data = m1999, aes(x=displ, y=cty, color='1999 cty')) + 
-  geom_line(data = m1999, aes(x=displ, y=hwy, color='1999 hwy')) +
-  geom_line(data = m2008, aes(x=displ, y=cty, color='2008 cty'), size=1) +
-  geom_line(data = m2008, aes(x=displ, y=hwy, color='2008 hwy'), size=1) +
-  xlab("배기량(cc)") +
-  ylab("연비M/h") +
-  labs(shape="year", title = '도시/고속도로 연비', subtitle = '연도별 배기량에 따른 도시/고속도로 연비')+
-  scale_color_discrete(name="year")
+grid.arrange(graph_1, graph_2, ncol=1)
 
   
 #시각화 try2 ####
