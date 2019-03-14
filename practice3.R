@@ -1,3 +1,12 @@
+# data ####
+
+data = read.csv('data/성적.csv')
+#data = dplyr::rename(data, stuno=학번, cls=반, gen=성별, kor=국어, eng=영어, sci=과학, art=예체, avg=평균, grade=학점)
+
+data = dplyr::rename(data, stuno=학번, cls=반, gen=성별, kor=국어, eng=영어, sci=과학, art=예체)
+
+data = dplyr::rename(data, math=수학)
+
 sys.sleep(10)
 
 # read.delim####
@@ -1053,6 +1062,8 @@ grid.arrange(x,y)
 # 연비를 꺽은선으로 그리시오.
 # (단, 2008년은 굵은 선으로 표현하시오)
 
+save(mpg, file="data/mpg.rda")
+
 mpg
 m1 = mpg[,c('year', 'cty', 'hwy', 'displ')]
 m1
@@ -1076,6 +1087,9 @@ ggplot() +
 #시각화 try2 ####
 # data(성적.csv) 데이터에서 국어 성적이 80점 이상인
 # 학생들의 수를 성비가 보이도록 학급별로 막대그래프를 그리시오.
+save(data, file="data/data.rda")
+data
+
 
 stukor = data[data$kor>=80,]
 
@@ -1111,21 +1125,37 @@ ggplot(data=smdt1) +
     aes(x=stuno, y=Korean),
     color='blue', size = 5)
 
-
 colnames(midwest)
 
 ggplot() +
   geom_point(data=smdt,
              aes(x=stuno, y=Korean),
              color='blue', size = 5)
-asiatot = midwest %>% filter(poptotal <= 500000 && popasian <= 10000)
+
+save(midwest, file="data/midwest.rda")
+library(dplyr)
+asiatot = midwest %>% filter(poptotal <= 500000 && popasian <= 10000) %>% select(county, state,poptotal, popasian)
 asiatot
 
-ggplot(asiatot) +
-  geom_point(aes(x=state, y=poptotal),
-             color='blue', alpha=0.3) +
-  geom_point(aes(x=state, y=popasian),
-             color='red', alpha=0.3)
+library(ggplot2)
+
+graph_1 = ggplot(asiatot) +
+  geom_point(aes(x=poptotal, y=popasian), color="blue", alpha=0.3) +
+    xlab("아시아 인구") +
+    ylab("전체 인구") +
+    labs(title = '아시아 인구 분포') 
+a
+graph_2 = ggplot(asiatot) +
+  geom_point(aes(x=state, y=poptotal, color="전체 인구"),alpha=0.3) +
+  geom_point(aes(x=state, y=popasian, color="아시아 인구"),alpha=0.3) +
+  xlab("주(state)") +
+  ylab("전체 인구") +
+  scale_color_discrete(name="인구") +
+  labs(title = '주별 아시아 인구 분포') 
+
+graph_2
+library(gridExtra)
+grid.arrange(graph_1, graph_2, ncol=1)
 
 ggplot(d, aes(cls, kor)) +
   geom_point(aes(color=cls, size=kor), 
@@ -1134,3 +1164,4 @@ ggplot(d, aes(cls, kor)) +
 # R markdown
 #rmd로
 data 
+

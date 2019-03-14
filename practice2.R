@@ -134,6 +134,7 @@ install.packages('data.table')
 #data.table ####
 library('data.table') #import의 개념
 start = Sys.time()
-read.csv('data/성적.csv')
+data = read.csv('data/성적.csv')
+data
 # fread('data/성적.csv') fread가 더 빠름 (data.table이 제공하는 fread()함수)
 Sys.time() - start
