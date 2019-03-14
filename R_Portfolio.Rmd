@@ -23,7 +23,7 @@ head(data)
 #### mpg데이터에서 연도별 배기량에 따른 도시/고속도로 연비를 꺽은선으로 그리시오. (단, 2008년은 굵은 선으로 표현하시오)
 
 
-```{r, echo=FALSE}
+```{r}
 m1 = mpg[,c('year', 'cty', 'hwy', 'displ')]
 m1 = m1[order(m1$year),]
 
