@@ -16,7 +16,7 @@ library(dygraphs)
 library(xts)
 library(gridExtra)
 library(tibble)
-
+library(stringi)
 usmap = map_data('state')
 
 
