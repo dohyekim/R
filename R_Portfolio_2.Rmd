@@ -1,0 +1,83 @@
+---
+title: "빅데이터 분석 시각화 포폴 #2"
+author: "김도혜"
+date: "2019년 3월 14일"
+output: html_document
+---
+```{r, warning=FALSE}
+# install.packages('maps')
+# install.packages('mapproj')
+library(ggiraph)
+library(ggiraphExtra)
+library(stringi)
+library(ggplot2)
+library(dplyr)
+library(kormaps2014)
+library(tibble)
+usmap = map_data('state')
+chodata = rownames_to_column(USArrests, var='state')
+chodata$state = tolower(chodata$state)
+```
+## 1.
+#### 미국의 범죄율을 한번에 작도하시오.)
+```{r, warning=FALSE}
+head(chodata)
+
+
+ggChoropleth(data=chodata,
+             aes(fill=c(Murder,Assault, UrbanPop, Rape), map_id=state),
+             map = usmap,
+             reverse = F,
+             interactive = T)
+```
+
+##2.
+#### 미국 범죄율의 Rape부분을 단계 구분도로 작성하시오. (클릭시 해당 state의 wikipedia 페이지를 보이도록 HTML로 저장하시오.)
+
+```{r}
+head(chodata)
+
+rptips = paste0(
+  sprintf("<p><strong>%s<strong></p>", as.character(chodata$state)),
+  '<table>',
+  '  <tr>',
+  sprintf('    <td>%s만</td>', paste0(round(chodata$Rape),'/',((chodata$UrbanPop)*10)))
+)
+
+onclick = sprintf('window.open(\"http://en.wikipedia.org/wiki/%s\")',as.character(chodata$state))
+
+rp = ggplot(chodata, aes(data = Rape, map_id = state)) +
+  geom_map_interactive(
+    aes(fill = Rape,
+        data_id = state,
+        tooltip = stringi::stri_enc_toutf8(rptips),
+        onclick = onclick),
+    map = usmap) +
+  expand_limits(x = usmap$long, y = usmap$lat) +
+  scale_fill_gradient2('Rape', low="red") +
+  labs(title = "USA Rape")
+
+ggiraph(code = print(rp))
+```
+
+##3.
+#### 시도별 결핵환자수(kormaps::tbc)를 단계 구분도로 작성하시오.(우리나라) (단, 환자수는 2006년부터 2015년 총합, NA인 지역은 0으로 표시할 것)
+
+```{r}
+tbc = changeCode(tbc)
+
+head(tbc)
+
+tbc$NewPts = ifelse(is.na(tbc$NewPts), '0', tbc$NewPts)
+tbc = tbc %>%select(code, name, year, NewPts) %>% filter(as.numeric(year) >=2006) %>%
+  group_by(code, name) %>%
+  summarise(NewPts = sum(as.numeric(NewPts)))
+
+ggChoropleth(data=tbc, 
+             aes(fill = NewPts, 
+                 map_id = code, 
+                 tooltip = name),
+             title="시도별 결핵 환자수",
+             map = kormap1)
+```
+

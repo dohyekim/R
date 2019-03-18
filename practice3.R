@@ -1061,25 +1061,23 @@ grid.arrange(x,y)
 # mpg데이터에서 연도별 배기량에 따른 도시/고속도로
 # 연비를 꺽은선으로 그리시오.
 # (단, 2008년은 굵은 선으로 표현하시오)
-asiatot = midwest %>% filter(poptotal <= 500000 && popasian <= 10000) %>% select(state,poptotal, popasian)
-head(asiatot)
 
-graph_1 = ggplot(asiatot) +
-  geom_point(aes(x=poptotal, y=popasian), color="blue", alpha=0.3) +
-  xlab("아시아 인구") +
-  ylab("전체 인구") +
-  labs(title = '아시아 인구 분포') 
+mpg = mpg %>% group_by(year,displ) %>% 
+  summarise(cty = mean(cty), hwy = mean(hwy))
+head(mpg)
 
-graph_2 = ggplot(asiatot) +
-  geom_point(aes(x=state, y=poptotal, color="전체 인구"),alpha=0.3) +
-  geom_point(aes(x=state, y=popasian, color="아시아 인구"),alpha=0.3) +
-  xlab("주(state)") +
-  ylab("전체 인구") +
-  scale_color_discrete(name="인구") +
-  labs(title = '주별 아시아 인구 분포') 
+mpg_1999 = mpg[mpg$year == 1999, ]
+mpg_2008 = mpg[mpg$year == 2008, ]
 
-grid.arrange(graph_1, graph_2, ncol=1)
-
+ggplot() + 
+  geom_line(data = mpg_1999, aes(x=displ, y=cty, color='1999 cty')) + 
+  geom_line(data = mpg_1999, aes(x=displ, y=hwy, color='1999 hwy')) +
+  geom_line(data = mpg_2008, aes(x=displ, y=cty, color='2008 cty'), size=2) +
+  geom_line(data = mpg_2008, aes(x=displ, y=hwy, color='2008 hwy'), size=2) +
+  xlab("배기량(cc)") +
+  ylab("연비(M/h)") +
+  labs(shape="year", title = '도시/고속도로 연비', subtitle = '(굵은 선은 2008년)')+
+  scale_color_discrete(name="year")
   
 #시각화 try2 ####
 # data(성적.csv) 데이터에서 국어 성적이 80점 이상인
@@ -1172,13 +1170,22 @@ head(USArrests)
 str(USArrests)
 rownames(USArrests)
 
-chodata = rownames_to_column(USArrests, var='state')
-head(chodata)
-chodata$state = tolower(chodata$state)
-install.packages('maps')
-install.packages('mapproj')
+# install.packages('maps')
+# install.packages('mapproj')
 usmap = map_data('state')
 head(usmap)
+chodata = rownames_to_column(USArrests, var='state')
+chodata$state = tolower(chodata$state)
+head(chodata)
+
+chodata
+
+ggChoropleth(data=chodata,
+             aes(fill=Murder, map_id=state),
+             map = usmap,
+             title = '..',
+             reverse = F,
+             interactive = T)
 
 ggChoropleth(data = chodata,
              aes(fill=Assault, map_id = state),
@@ -1186,6 +1193,29 @@ ggChoropleth(data = chodata,
              title='US Assault',
              reverse = F,
              interactive = T)
+
+ggChoropleth(data = chodata,
+              aes(fill=Murder, map_id = state),
+              map = usmap,
+              title='US ,Murder',
+              reverse = F,
+              interactive = T)
+
+ggChoropleth(data = chodata,
+              aes(fill=UrbanPop, map_id = state),
+              map = usmap,
+              title='US UrbanPop',
+              reverse = F,
+              interactive = T)
+  
+ggChoropleth(data = chodata,
+              aes(fill=Rape, map_id = state),
+              map = usmap,
+              title='US Rape',
+              reverse = F,
+              interactive = T)
+
+
 
 # ggplot() + geom_map() ####
 library(ggiraph)
@@ -1229,8 +1259,29 @@ ggplot(chodata, aes(data = Murder, map_id = state)) +
         onclick = onclick),
     map = usmap) +
   expand_limits(x = usmap$long, y = usmap$lat) +
-  scale_fill_gradient2('M', low="red") +
+  scale_fill_gradient2('value', low="red") +
   labs(title = "USA Murder") -> gg_map
+
+gg_map
+
+ggplot(chodata, aes(data = Assault, map_id = state)) +
+  geom_map_interactive(
+    aes(fill = Assault,
+        data_id = state,
+        tooltip = stringi::stri_enc_toutf8(tooltips),
+        onclick = onclick),
+    map = usmap) +
+  expand_limits(x = usmap$long, y = usmap$lat) +
+  scale_fill_gradient2('value', low="red") +
+  labs(title = "USA Assault") -> gg_map_2
+
+gg_map = ggiraph(code = print(gg_map))
+gg_map
+girafe(ggobj = gg_map)
+
+grid.arrange(gg_map, gg_map_2)
+
+gg_map
 
 ggiraph(code = print(gg_map))
 girafe(ggobj = gg_map)
@@ -1256,20 +1307,164 @@ setLib = function() {
   }
 setLib()
 
-# window에서 필요
-kdata = changeCode(korpop1)
-kormap1
-head(kdata)
-colnames(kdata)
+
+# window에서 필요 ####
+# kdata = changeCode(korpop1)
+# kmap = changeCode(kormap1)
+
+kdata = korpop1
 kdata = kdata %>% rename(pop =총인구_명)
 kdata = kdata %>% rename(area =행정구역별_읍면동)
-colnames(kdata)
+# kdata$area = stringi::stri_enc_toutf8(kdata$area)
+# rm(kdata)
 
-kdata$area
-kdata$area = stringi::stri_enc_toutf8(kdata$area)
+save(kdata, file="data/kdata.rda")
+
+# kormap1$name = stringi::stri_enc_toutf8(kormap1$name)
+
+# 지도 그리기 ####
+kkdata = changeCode(kdata)
+head(kmap)
+head(kormap1)
 ggChoropleth(data=kdata, 
              aes(fill = pop, 
                  map_id = code,
                  tooltip = area),
              map = kormap1,
              interactive = T)
+head(kkdata$code)
+colnames(kdata)
+head(tbcc$code)
+
+
+head(kkdata$area)
+head(tbcc$name)
+
+head(kkdata$pop)
+head(tbcc$NewPts)
+
+ggplot(kdata, aes(data = pop, map_id = code)) +
+  geom_map( aes(fill = pop), map = kormap1) + 
+  expand_limits(x = kormap1$long, y = kormap1$lat) +
+  scale_fill_gradient2('인구', low='darkblue') +
+  xlab('경도') + ylab('위도') + 
+  labs(title="시도별 인구")
+
+
+#plotly ####
+install.packages('plotly')
+
+head(data)
+t = ggplot(data, aes(eng, kor)) +
+  geom_point(aes(color=eng, size=kor), alpha=0.3)
+ggplotly(t)
+
+last_plot()
+
+pp = ggplot(stukor, aes(cls)) +
+  geom_bar(aes(fill=gen),
+           width=0.5) +
+  scale_fill_discrete(name="성별") +
+  labs(title='국어 우수 학생', subtitle='80점 이상') + 
+  xlab("학급") + ylab('학생수')
+ggplotly(pp)
+
+head(data)
+
+qq = ggplot() + 
+  geom_line(data = mpg_1999, aes(x=displ, y=cty, color='1999 cty')) + 
+  geom_line(data = mpg_1999, aes(x=displ, y=hwy, color='1999 hwy')) +
+  geom_line(data = mpg_2008, aes(x=displ, y=cty, color='2008 cty'), size=2) +
+  geom_line(data = mpg_2008, aes(x=displ, y=hwy, color='2008 hwy'), size=2) +
+  xlab("배기량(cc)") +
+  ylab("연비(M/h)") +
+  labs(shape="year", title = '도시/고속도로 연비', subtitle = '(굵은 선은 2008년)')+
+  scale_color_discrete(name="year")
+
+ggplotly(qq)
+
+#dygraphs ##########
+
+install.packages('dygraphs')
+library(dygraphs)
+library(xts)
+
+economics
+head(economics)
+
+unemp = xts(economics$unemploy, order.by = economics$date)
+dygraph(unemp)
+
+dygraph(unemp) %>% dyRangeSelector()
+
+savert = xts(economics$psavert, order.by = economics$date)
+dygraph(savert)
+unemp2 = xts(economics$unemploy / 1000, order.by=economics$date)
+pu = cbind(savert, unemp2)
+colnames(pu) = c('unemploy', 'savert')
+dygraph(pu) %>% dyRangeSelector()
+
+
+# 지도시각화 trythis1 ####
+head(chodata)
+
+ggChoropleth(data=chodata,
+             aes(fill=c(Murder,Assault, UrbanPop, Rape), map_id=state),
+             map = usmap,
+             reverse = F,
+             interactive = T)
+
+#지도시각화 trythis2 ####
+# 
+# 미국 범죄율의 Rape부분을 단계 구분도로 작성하시오.
+# (단, 툴팁은 그림과 같이 표현하고, 
+#   클릭시 해당 state의 wikipedia 페이지를
+#   보이도록 HTML로 저장하시오)
+# http://en.wikipedia.org/wiki/wisconsin
+
+usmap = map_data('state')
+chodata = rownames_to_column(USArrests, var='state')
+chodata$state = tolower(chodata$state)
+head(chodata)
+
+rptips = paste0(
+  sprintf("<p><strong>%s<strong></p>", as.character(chodata$state)),
+  '<table>',
+  '  <tr>',
+  sprintf('    <td>%s만</td>', paste0(round(chodata$Rape),'/',((chodata$UrbanPop)*10)))
+)
+
+onclick = sprintf('window.open(\"http://en.wikipedia.org/wiki/%s\")',as.character(chodata$state))
+
+# window.open("https://www.w3schools.com");
+rp = ggplot(chodata, aes(data = Rape, map_id = state)) +
+  geom_map_interactive(
+    aes(fill = Rape,
+        data_id = state,
+        tooltip = stringi::stri_enc_toutf8(rptips),
+        onclick = onclick),
+    map = usmap) +
+  expand_limits(x = usmap$long, y = usmap$lat) +
+  scale_fill_gradient2('Rape', low="red") +
+  labs(title = "USA Rape")
+
+ggiraph(code = print(rp))
+  
+# 지도시각화 trythis3 ####
+
+# 시도별 결핵환자수(kormaps::tbc)를
+# 단계 구분도로 작성하시오.(우리나라)
+# (단, 환자수는 2006년부터 2015년 총합,
+#   NA인 지역은 0으로 표시할 것)
+tbc
+tbc$NewPts = ifelse(is.na(tbc$NewPts), '0', tbc$NewPts)
+tbc = tbc %>%select(code, name, year, NewPts) %>% filter(as.numeric(year) >=2006) %>%
+  group_by(code, name) %>%
+  summarise(NewPts = sum(as.numeric(NewPts)))
+
+ggChoropleth(data=tbc, 
+             aes(fill = NewPts, 
+                 map_id = code, 
+                 tooltip = name),
+             map = kormap1)
+
