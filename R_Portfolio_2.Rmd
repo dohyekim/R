@@ -19,7 +19,7 @@ chodata = rownames_to_column(USArrests, var='state')
 chodata$state = tolower(chodata$state)
 ```
 ## 1.
-#### 미국의 범죄율을 한번에 작도하시오.)
+#### 미국의 범죄율을 한번에 작도하시오.
 ```{r, warning=FALSE}
 head(chodata)
 
