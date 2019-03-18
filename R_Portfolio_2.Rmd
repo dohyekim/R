@@ -41,8 +41,9 @@ rptips = paste0(
   sprintf("<p><strong>%s<strong></p>", as.character(chodata$state)),
   '<table>',
   '  <tr>',
-  sprintf('    <td>%s만</td>', paste0(round(chodata$Rape),'/',((chodata$UrbanPop)*10)))
-)
+  sprintf('<td>%s만</td>', paste0(round(chodata$Rape),'/',((chodata$UrbanPop)*10))),
+ '  </tr>',
+  '</table>')
 
 onclick = sprintf('window.open(\"http://en.wikipedia.org/wiki/%s\")',as.character(chodata$state))
 
