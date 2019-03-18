@@ -1291,6 +1291,9 @@ girafe(ggobj = gg_map)
 install.packages('devtools')
 
 devtools::install_github("cardiomoon/kormaps2014")
+rm(tbc)
+
+tbc
 library(ggiraph)
 library(stringi)
 library(ggplot2)
@@ -1306,7 +1309,13 @@ setLib = function() {
   library(ggiraphExtra)
   }
 setLib()
+kormap1
+tbc
+library(kormaps2014)
+devtools::install_github("cardiomoon/kormaps2014")
 
+install.packages("devtools")
+devtools::install_github("cardiomoon/kormaps2014")
 
 # window에서 필요 ####
 # kdata = changeCode(korpop1)
@@ -1434,7 +1443,9 @@ rptips = paste0(
   sprintf('    <td>%s만</td>', paste0(round(chodata$Rape),'/',((chodata$UrbanPop)*10)))
 )
 
-onclick = sprintf('window.open(\"http://en.wikipedia.org/wiki/%s\")',as.character(chodata$state))
+onclick = sprintf('window.open("http://en.wikipedia.org/wiki/%s")',as.character(chodata$state))
+onclick
+
 
 # window.open("https://www.w3schools.com");
 rp = ggplot(chodata, aes(data = Rape, map_id = state)) +
@@ -1445,8 +1456,9 @@ rp = ggplot(chodata, aes(data = Rape, map_id = state)) +
         onclick = onclick),
     map = usmap) +
   expand_limits(x = usmap$long, y = usmap$lat) +
-  scale_fill_gradient2('Rape', low="red") +
+  scale_fill_gradient2('Rape', low="blue", high='red') +
   labs(title = "USA Rape")
+
 
 ggiraph(code = print(rp))
   
@@ -1456,15 +1468,18 @@ ggiraph(code = print(rp))
 # 단계 구분도로 작성하시오.(우리나라)
 # (단, 환자수는 2006년부터 2015년 총합,
 #   NA인 지역은 0으로 표시할 것)
-tbc
+tbc = changeCode(tbc)
+
+head(tbc)
+
 tbc$NewPts = ifelse(is.na(tbc$NewPts), '0', tbc$NewPts)
-tbc = tbc %>%select(code, name, year, NewPts) %>% filter(as.numeric(year) >=2006) %>%
+temptbc = tbc %>%select(code, name, year, NewPts) %>% filter(as.numeric(year) >=2006) %>%
   group_by(code, name) %>%
   summarise(NewPts = sum(as.numeric(NewPts)))
 
-ggChoropleth(data=tbc, 
+ggChoropleth(data=temptbc, 
              aes(fill = NewPts, 
                  map_id = code, 
                  tooltip = name),
-             map = kormap1)
-
+             title="시도별 결핵 환자수",
+             map = kormap1) 

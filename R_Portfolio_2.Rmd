@@ -69,15 +69,16 @@ tbc = changeCode(tbc)
 head(tbc)
 
 tbc$NewPts = ifelse(is.na(tbc$NewPts), '0', tbc$NewPts)
-tbc = tbc %>%select(code, name, year, NewPts) %>% filter(as.numeric(year) >=2006) %>%
+temptbc = tbc %>%select(code, name, year, NewPts) %>% filter(as.numeric(year) >=2006) %>%
   group_by(code, name) %>%
   summarise(NewPts = sum(as.numeric(NewPts)))
 
-ggChoropleth(data=tbc, 
+ggChoropleth(data=temptbc, 
              aes(fill = NewPts, 
                  map_id = code, 
                  tooltip = name),
              title="시도별 결핵 환자수",
-             map = kormap1)
+             map = kormap1) +
+            labs(fill="환자수")
 ```
 
