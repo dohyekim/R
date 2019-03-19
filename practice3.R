@@ -1468,18 +1468,135 @@ ggiraph(code = print(rp))
 # 단계 구분도로 작성하시오.(우리나라)
 # (단, 환자수는 2006년부터 2015년 총합,
 #   NA인 지역은 0으로 표시할 것)
+rm(tbc)
+tbc
 tbc = changeCode(tbc)
 
 head(tbc)
+
+tbc$name
+rm(tbc)
+tbc
 
 tbc$NewPts = ifelse(is.na(tbc$NewPts), '0', tbc$NewPts)
 temptbc = tbc %>%select(code, name, year, NewPts) %>% filter(as.numeric(year) >=2006) %>%
   group_by(code, name) %>%
   summarise(NewPts = sum(as.numeric(NewPts)))
 
+tbc %>% group_by(name) %>% summarise(name1 = mean(name))
+
 ggChoropleth(data=temptbc, 
              aes(fill = NewPts, 
                  map_id = code, 
                  tooltip = name),
              title="시도별 결핵 환자수",
-             map = kormap1) 
+             map = kormap1,
+             interactive = T) +
+labs(fill="환자수")
+
+library(stringi)
+tooltip = stringi::stri_enc_toutf8(tooltips),
+tbc$name
+ggChoropleth(data=chodata,
+             aes(fill=Murder, map_id=state),
+             map = usmap,
+             title = '..',
+             reverse = F,
+             interactive = T)
+
+head(tbc)
+rm(tbc)
+tbc
+tbc$NewPts = ifelse(is.na(tbc$NewPts), 0, tbc$NewPts)
+str(tbc)
+
+y = tbc$year
+y
+yy = as.character(y)
+yy
+yyy = as.numeric(yy)
+yyy
+temptbc = tbc %>%select(code, name, year, NewPts) %>% 
+                  filter(as.numeric(as.character(year)) >=2006) %>%
+                  group_by(code, name) %>%
+                  summarise(pts = sum(NewPts))
+
+temptbc = tbc %>%select(code, name, year, NewPts) %>% 
+  filter(year %in% c(2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015)) %>%
+  group_by(code, name) %>%
+  summarise(pts = sum(NewPts))
+
+temptbc
+
+ggChoropleth(data=temptbc, 
+             aes(fill = pts, 
+                 map_id = code, 
+                 tooltip = name),
+             title="시도별 결핵 환자수",
+             map = kormap1,
+             interactive=T)
+
+
+# sql ##########
+
+# install.packages('sqldf')
+library(sqldf)
+sqldf("select * from data")
+data2 = sqldf("select cls, avg(kor) koravg from data group by cls")
+data2
+# install.packages('RMySQL')
+library(RMySQL)
+# mysql ##########
+
+drv = dbDriver("MySQL") #database를 연결해주는 bridge
+
+#db와 연결
+conn = dbConnect(drv, host='127.0.0.1', port=3307, dbname='melondb', user='dooo', password='1234')
+
+#한글설정
+# dbGetQuery(conn, "SHOW VARIABLES LIKE 'character_set_%';")
+# options(encoding='UTF-8')
+# dbSendQuery(conn, 'set character set utf8')   # set utf-8
+
+
+dbListTables(conn)
+
+# query문 하나만 실행하고 싶을 때
+dbSendQuery(conn, 'set character set utf8')
+
+
+# query문 여러개 실행하고 싶을 때 
+rsdf = dbGetQuery(conn, "select * from MS_Song limit 5")
+rsdf = changeCode(rsdf)
+
+rsdf
+dbGetQuery(conn, "update Song set title='선물1' where songno = '30514366'")
+
+# Transaction
+dbBegin(conn);
+dbGetQuery(conn, "update Song set title='선물1' where songno = '30514366'");
+dbRollback(conn) 
+dbCommit(conn)
+
+
+# close 필수 (#show processlist 확인하기)
+dbDisconnect(conn)
+
+#마지막에!! 한 번만 !!
+# unload하면 expired돼서 다시 연결 못함 (Ctrl+Shift+F10하기 전까지는)
+dbUnloadDriver(drv)
+dbGetQuery(conn, "select * from MS_Song limit 5")
+
+
+# sql 장르/랭킹 ###########
+
+# drv = dbDriver("MySQL")
+# conn = dbConnect(drv, host='127.0.0.1', port=3307, dbname='melondb', user='dooo', password='1234')
+temptbl = dbGetQuery(conn, "select rank, genre from Song_Rank sr inner join MS_Song s on sr.song_no = s.song_no limit 99;")
+temptbl
+
+ggplot(temptbl, aes(genre, rank)) +
+  geom_point(
+             aes(color=genre, size=-rank),
+             alpha=0.3)
+ggplot() + geom_point(data=temptbl, aes(x=genre, y=rank))
