@@ -1,0 +1,43 @@
+---
+title: "시각화를 위한 함수"
+author: "DohyeKim"
+date: "2019년 3월 20일"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+smdt = data.frame(stuno=1:5,
+                  Korean=sample(60:100, 5),
+                  English=sample((5:10)*10, 5),
+                  Math=sample(50:100, 5))
+head(smdt)
+```
+
+### 1.산점도
+```{r}
+ggplot() +
+  geom_point(data=smdt,
+             aes(x=stuno, y=Korean),
+             color='blue', size = 5)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
