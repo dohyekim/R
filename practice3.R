@@ -863,7 +863,7 @@ d = data %>% filter(kor > 90) %>%
   select('cls')
 pie(table(d))
 
-#ggplot2 ####
+#geom_point####
 
 smdt
 
@@ -1600,3 +1600,31 @@ ggplot(temptbl, aes(genre, rank)) +
              aes(color=genre, size=-rank),
              alpha=0.3)
 ggplot() + geom_point(data=temptbl, aes(x=genre, y=rank))
+
+# 시험2 ####
+
+#(1) 학생 수를 성비가 보이도록 학급별로 막대그래프 ####
+data
+stuMath = data %>% filter(math >= 90) %>% select(stuno, cls, gen, math)
+stuMath
+
+ggplot(stuMath, aes(cls)) +
+  geom_bar(aes(fill=gen),
+           width=0.5) +
+  scale_fill_discrete(name="성별") +
+  labs(title='수학 우수 학생', subtitle='90 
+       
+       00점 이상') + 
+  xlab("학급") + ylab('학생수')
+
+#(2) 학급별 밀도 그래프 ####
+data
+stuMath = data %>% filter(math >= 90) %>% select(stuno, cls, gen, math)
+stuMath
+
+ggplot(stuMath, aes(math)) +
+  geom_density(aes(fill=factor(cls)), alpha=0.4) +
+  scale_fill_discrete(name="반") +
+  labs(title='학급별 수학 우수 성적') + 
+  xlab("성적") + ylab('밀도')
+
