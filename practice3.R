@@ -912,6 +912,8 @@ ggplot(d, aes(cls, kor)) +
 
 # geom_line() ####
 head(mpg)
+ggplot2::mpg
+colnames(mpg)
 d2 = mpg %>% group_by(manufacturer, displ) %>% 
   summarise(m1 = mean(cty), m2 = mean(hwy))
 d2
@@ -998,14 +1000,6 @@ ggplot(mpg, aes(cty)) +
        fill = "실린더수")
 
 mpg$cyl
-
-ggplot(mpg, aes(manufacturer)) +
-  geom_bar(aes(fill=class), #fill ==> 기준이 되는 값(class별)
-           width = 0.5) +
-  theme(axis.text.x = element_text(angle=45,       # 글씨의 기울기
-                                   vjust=0.6)) +   # 글씨의 하단 맞춤(띄우기)
-  scale_fill_discrete(name = "class") +      # legend
-  labs(title = 'Title', subtitle = 'Sub Title')
 
 
 ggplot(data, aes(cls)) +

@@ -1,12 +1,13 @@
 ---
 title: "시각화를 위한 함수"
 author: "DohyeKim"
-date: "2019년 3월 20일"
+date: "2019년 4월 19일"
 output: html_document
 ---
 
 ```{r}
 library(ggplot2)
+library(dplyr)
 smdt = data.frame(stuno=1:5,
                   Korean=sample(60:100, 5),
                   English=sample((5:10)*10, 5),
@@ -14,7 +15,7 @@ smdt = data.frame(stuno=1:5,
 head(smdt)
 ```
 
-### 1.산점도
+## 1.산점도
 ```{r}
 ggplot() +
   geom_point(data=smdt,
@@ -22,22 +23,106 @@ ggplot() +
              color='blue', size = 5)
 ```
 
-## R Markdown
+##### smdt 데이터를 활용해 학생의 국어 점수를 나타낸 그래프이다.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+##### 위 그래프는 다음과 같이 쓸 수도 있다.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+ggplot(data=smdt) +
+  geom_point(
+             aes(x=stuno, y=Korean),
+             color='blue', size = 5)
 ```
 
-## Including Plots
+##### aes() 안에 color를 주게 되면 변수의 개수만큼 색이 정해진다.
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+ggplot() +
+  geom_point(data=smdt,
+             aes(x=stuno, y=Korean, color=stuno, size=5))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## 2. 꺾은선 그래프
+
+```{r}
+d2 = ggplot2::mpg %>% group_by(manufacturer, displ) %>% 
+  summarise(m1 = mean(cty), m2 = mean(hwy))
+ggplot(d2, aes(x=displ)) + 
+  geom_line(aes(y=m1, color='cty')) + 
+  geom_line(aes(y=m2, color='hwy'), size=1) +
+  scale_colour_manual("", breaks = c("cty", "hwy"),
+                      values = c("red", "blue")) +
+  xlab("x축") +
+  xlim(1, 8) +
+  scale_y_continuous("y축", limits = c(5, 45)) +
+  labs(title = '타이틀', subtitle = '서브 타이틀') 
+```
+
+##### - ggplot2의 내장된 데이터 mpg를 사용해 배기량에 따른 도시, 고속도로 평균 연비를 나타낸 그래프이다.
+
+##### - scale_colour_namual()은 직접 범례별 색을 정해주는 함수이다.
+
+##### - xlab()은 x축의 이름을, xlim()은 x축의 범위를 나타낸다.
+
+##### - ylab()과 ylim()은 scale_y_continuous([y축이름], limits=[범위])로 한 번에 나타낼 수 있다.
+
+##### - labs() 를 통해 제목과 부제를 표현할 수 있다.
+
+##### - data가 뭉친 곳의 꺾임을 줄이기 위해서 summarise()에서 mean함수를 사용했다.
+
+##3. 히스토그램
+```{r}
+ggplot(ggplot2::mpg, aes(displ)) +
+  geom_histogram(aes(fill=class), 
+                 binwidth = .3,     
+                 col='black',       
+                 size=.5) +         
+  labs(title = 'Title', subtitle = 'Sub Title')
+```
+
+##### - ggplot2의 내장된 데이터 mpg를 사용해 차종에 따른 연비를 나타낸 히스토그램이다.
+
+##### - histogram에서는 x축에 대한 data만 넘기면 되기 때문에 aes([x축데이터])로 구성한다.
+
+##### - binwidth 옵션은 막대의 넓이를 정한다.
+
+##### - col 옵션은 막대 선의 색을 정한다.
+
+##### - size 옵션은 막대 선의 굵기를 정한다.
+
+##4. 막대그래프
+```{r}
+ggplot(ggplot2::mpg, aes(manufacturer)) +
+  geom_bar(aes(fill=class), 
+           width = 0.5) +
+  theme(axis.text.x = element_text(angle=45,       
+                                   vjust=0.6)) +   
+  scale_fill_discrete(name = "class") +  
+  labs(title = 'Title', subtitle = 'Sub Title')
+```
+
+##### - ggplot2의 내장된 데이터 mpg를 사용해 제조사별 차종의 수를 나타낸 막대그래프이다.
+
+##### - fill 옵션에는 기준이 되는 값을 입력한다.
+
+##### - width 옵션은 막대의 넓이를 정한다.
+
+##### - theme()의 angle은 글씨의 기울기를, vjust는 글씨가 아래에서부터 떨어진 정도를 의미한다.
+
+##### - scale_fill_discrete()의 name 옵션은 범례의 이름을 정한다.
+
+##5. 밀도그래프
+```{r}
+ggplot(ggplot2::mpg, aes(cty)) +
+  geom_density(aes(fill=factor(cyl)), alpha=0.8) +
+  labs(title="밀도그래프", subtitle = "실린더수에 따른 시내 연비의 밀도그래프",
+       caption="Source: ggplot2::mpg",
+       x = "도시 연비",
+       fill = "실린더수")
+```
+
+##### - ggplot2의 내장된 데이터 mpg를 사용해 실린더수에 따른 시내 연비를 나타낸 밀도그래프이다.
+
+##### - aes()의 fill 옵션에는 class가 factor인 데이터가 들어가한 한다. 밀도는 연속형이 아니기 때문이다.
+
+##### - labs()의 fill 옵션은 범례의 이름을 정한다.
