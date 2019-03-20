@@ -1,6 +1,6 @@
 ---
 title: "시각화를 위한 함수"
-author: "DohyeKim"
+author: "Dohye Kim"
 date: "2019년 4월 19일"
 output: html_document
 ---
@@ -15,7 +15,7 @@ smdt = data.frame(stuno=1:5,
 head(smdt)
 ```
 
-## 1.산점도
+## 1. 산점도
 ```{r}
 ggplot() +
   geom_point(data=smdt,
