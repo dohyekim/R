@@ -1622,3 +1622,168 @@ ggplot(stuMath, aes(math)) +
   labs(title='학급별 수학 우수 성적') + 
   xlab("성적") + ylab('밀도')
 
+
+# Text Mining ######
+
+install.packages('tm')
+getSources()
+getReaders()
+
+folder = system.file("texts", "txt", package="tm")
+folder
+txtSource = DirSource(folder)   # dir 경로로 Corpus 생성
+class(txtSource); str(txtSource)   
+doc = VCorpus(txtSource, readerControl = list(language='lat')) #영어는 lat/en 둘 다 가능
+class(doc); summary(doc) #length 칼럼 
+
+meta(doc)
+meta(doc, type='local')
+inspect(doc)
+inspect(doc[1])
+doc[[1]]
+
+writeCorpus(doc, path='data', filenames= names(doc))
+
+# 하나만 저장하고 싶을 때
+# writeCorpus(doc[1], path='data', filenames='corpus_doc.txt')
+
+# Corpus 전처리 ######
+getTransformations() # tm_mpa(doc, FUN, ...) 여기서 fun에 들어갈 수 있는 함수들을 보여줌
+doc[[1]][1]
+data("crude")
+crude
+
+crude[[1]]
+crude[[1]][1]
+
+# stopwords() : 실제 검색할 때 빠지는 것들
+stopwords('english') #영어에서 쓰이는 불용
+stopwords(c('a','b','c'))
+crude = tm_map(crude, removeWords, stopwords("english"))
+# stemdocument() : 어근
+crude = tm_map(crude, stemDocument, language="english")
+
+
+crude[[1]]
+crude[[1]][1] #내용
+
+# 이 때 n 사라짐
+crude = tm_map(crude, stripWhitespace)
+crude[[1]][1]
+
+# 아예 다 소문자로 만들어서 하기
+crude = tm_map(crude, content_transformer(tolower))
+crude[[1]][1]
+
+# 이때 \도 날아감
+crude = tm_map(crude, removePunctuation)
+crude[[1]][1]
+
+crude = tm_map(crude, removeWords, stopwords("english"))
+crude[[1]][1]
+
+crude = tm_map(crude, stripWhitespace)
+crude[[1]][1]
+
+install.packages('SnowballC')
+crude = tm_map(crude, stemDocument, language="english")
+crude[[1]][1]
+
+tdm = TermDocumentMatrix(crude) # 행:term(단어), 열:document(문서)
+tdm
+
+rownames(tdm)
+tail(as.matrix(tdm))
+tdm['year',]
+
+tdm$i
+tdm$j
+tdm$v
+tdm = removeSparseTerms(tdm, 0.8)
+tdm
+rownames(tdm)
+dtm = t(tdm)
+inspect(tdm)
+inspect(tdm[1:5, 1:10])
+
+
+
+
+# 참고 (특정 단어 제거)
+# crude = tm_map(crude, removeWords, c("xxx", "yyy"))
+
+# entry는 보통 한 문장 (단어나 문단도 될 수 있음)
+# sparsity 희소성 (90%라고 뜨면 90%가 거의 한 번만 쓰였다는 뜻, 80% 이상이 되면 재사용이 없다고 보면 됨)
+
+# 빈도 분석 #####
+
+#findFreqTerms(tdm, 20) #### : 이상 / 이하
+findFreqTerms(tdm, 20)
+findFreqTerms(tdm, 20, 30)
+findFreqTerms(tdm, 0, 10)
+
+#findAssocs(<Data>, <단어>, <비율>) #### <단어>와 관련 있는 단어
+findAssocs(tdm, "last", 0.5)
+findAssocs(tdm, "oil", .7)
+
+#rowSums(matrix) 단어별 빈도수 계산 ####
+rowSums(as.matrix(tdm))
+wFreq = sort(rowSums(as.matrix(tdm)), decreasing=T)
+wFreq
+
+names(wFreq) #단어만 (row는 단어(term)이니까)
+
+wFreq > 10 # True/False 반환
+
+#subset() 특정 조건으로 잘라내기 ####
+wFreq = subset(wFreq, wFreq > 10)
+wFreq
+
+# word cloud ####
+
+# install.packages('RColorBrewer')
+library(RColorBrewer)
+display.brewer.all()
+
+brewer.pal.info                 # brewer palette 정보
+pa = brewer.pal(8, 'Blues')     # Blues Theme에서 8가지 색상 선택
+darks = brewer.pal(8, 'Dark2')
+pa
+darks
+
+# install.packages("wordcloud")
+library(wordcloud)
+wFreq = sort(rowSums(as.matrix(tdm)), decreasing=T)
+wordcloud(words = names(wFreq), freq=wFreq, min.freq = 10,
+          random.order = F, colors = darks)
+
+set.seed(100)
+
+wordcloud(words = names(wFreq), freq=wFreq, min.freq = 1, 
+          random.order=F, colors=darks)
+
+wordcloud(words = names(wFreq), freq=wFreq, min.freq = 1, 
+          random.order=F, colors=pa)
+
+# wordcloud Try This ####
+names(doc)
+doc = tm_map(doc, removeWords, stopwords('english'))
+doc = tm_map(doc, stripWhitespace)
+doc = tm_map(doc, removePunctuation)
+doc = tm_map(doc, stripWhitespace)
+
+doctdm = TermDocumentMatrix(doc)
+doctdm
+rownames(doctdm)
+docfreq = sort(rowSums(as.matrix(doctdm)), decreasing=T)
+docfreq
+names(docfreq)
+wordcloud(words = names(doctdm), freq=docfreq, min.freq=10, random.order=F, colors=darks)
+wordcloud(words = names(doctdm), freq=docfreq, min.freq = 1, 
+          scale=c(5,0.5),
+          random.order = F, random.color = T, colors = darks)
+
+doctdmrm = removeSparseTerms(doctdm, 0.8)
+docfreqrm = rowSums(as.matrix(doctdmrm))
+wordcloud(words = names(docfreqrm), freq=docfreq, min.freq=10, random.order=F, scale=c(2.5,0.5), colors=darks)
+warnings()
