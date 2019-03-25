@@ -1,0 +1,118 @@
+---
+title: "Twitter"
+author: "김도혜"
+date: "2019년 4월 9일"
+output: html_document
+---
+
+```{r, warning=FALSE}
+library(dplyr)
+library(twitteR); 
+library(RCurl); 
+library(RJSONIO); 
+library(stringr)
+library(streamR); 
+library(ROAuth)
+library(rJava)
+library(KoNLP)
+library(RColorBrewer)
+library(wordcloud)
+Sys.setenv(JAVA_HOME="C:/Program Files/Java/jre1.8.0_191/")
+```
+
+```{r, echo=FALSE}
+load("data/api_key.rda")
+load("data/api_secret.rda")
+load("data/token.rda")
+load("data/token_secret.rda")
+```
+
+
+```{r}
+setup_twitter_oauth(api_key, api_secret, token, token_secret)
+
+tweets = searchTwitter(enc2utf8('문별'), n=200, lan='ko', 
+                       since='2019-03-11', until='2019-03-31')
+tdf = twListToDF(tweets)
+```
+
+
+##### **중복 제거**
+```{r}
+tw = unique(tdf$text)
+```
+
+##### **제어 문자 제거**
+```{r}
+tw = gsub("[[:cntrl:]]", "", tw)
+```
+
+##### **url링크 제거**
+```{r}
+tw = gsub("http[s]?://[[:alnum:].\\/]+", "", tw)
+```
+
+##### **@/R 제거**
+```{r}
+tw = gsub("&[[:alnum:]]+;", "", tw)
+tw = gsub("@[[:alnum:]]+[:]?", "", tw)
+
+```
+
+##### **자/모음만 있는 글자 제거**
+```{r, warning=FALSE}
+tw = gsub("[ㄱ-ㅎㅏ-ㅣ]","",tw)
+```
+
+##### **공백 제거**
+```{r}
+tw = gsub("\\s{2,}", " ", tw)
+```
+
+##### **특수문자 제거**
+```{r}
+tw = gsub("[[:punct:]]", "", tw)
+```
+
+##### **그 외 필요없는 단어 제거**
+```{r}
+tw = gsub("https","", tw)
+tw = gsub("RT","", tw)
+
+# 제거 후 다시 공백제거 
+tw = gsub("\\s{2,}", " ", tw)
+```
+
+##### **특수문자 제거 **
+```{r}
+tw = gsub("[[:punct:]]", "", tw)
+```
+
+##### **(windows)이모티콘 제거**
+
+```{r}
+tw = gsub('<.*>', '', enc2native(tw))
+```
+
+##### **KONLP로 명사만 추출**
+```{r}
+wc = sapply(tw, extractNoun, USE.NAMES = F)
+wc1 = table(unlist(wc))
+
+# 상위 100개만 추출
+wc2 = head(sort(wc1, decreasing = T), 100)
+```
+
+##### **두 글자 이상만 추출**
+```{r}
+ul = unlist(wc)
+ul = ul[nchar(ul) > 1]
+ul = table(ul)
+```
+
+##### **wordcloud**
+```{r}
+pal = brewer.pal(9, "Set1")
+wordcloud(names(ul), freq=ul, scale=c(5,0.5), rot.per=0.25, 
+          min.freq = 2, random.order = F, random.color = T, colors = pal)
+```

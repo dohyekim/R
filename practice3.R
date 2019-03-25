@@ -1787,3 +1787,4 @@ doctdmrm = removeSparseTerms(doctdm, 0.8)
 docfreqrm = rowSums(as.matrix(doctdmrm))
 wordcloud(words = names(docfreqrm), freq=docfreq, min.freq=10, random.order=F, scale=c(2.5,0.5), colors=darks)
 warnings()
+
