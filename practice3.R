@@ -1652,7 +1652,7 @@ getTransformations() # tm_mpa(doc, FUN, ...) 여기서 fun에 들어갈 수 있�
 doc[[1]][1]
 data("crude")
 crude
-
+class(crude)
 crude[[1]]
 crude[[1]][1]
 
@@ -1767,6 +1767,7 @@ wordcloud(words = names(wFreq), freq=wFreq, min.freq = 1,
 
 # wordcloud Try This ####
 names(doc)
+class(doc)
 doc = tm_map(doc, removeWords, stopwords('english'))
 doc = tm_map(doc, stripWhitespace)
 doc = tm_map(doc, removePunctuation)
@@ -1788,3 +1789,125 @@ docfreqrm = rowSums(as.matrix(doctdmrm))
 wordcloud(words = names(docfreqrm), freq=docfreq, min.freq=10, random.order=F, scale=c(2.5,0.5), colors=darks)
 warnings()
 
+
+#연관성##########
+
+install.packages(c("arules", "igraph", "combinat", "arulesViz", "visNetwork"))
+library(arules); library(igraph); library(combinat)
+library(arulesViz); library(visNetwork) # 시각
+wc
+
+# Naver #######
+install.packages(c('rvest', 'httr', 'stringr'))
+library(rvest); library(httr); library(stringr); library(dplyr)
+
+newsurl = 'https://news.naver.com/main/home.nhn'
+html = read_html(newsurl)
+links = html_attr(html_nodes(html,'div#main_content li a'), 'href')
+links = links[!is.na(links)]
+news = list()
+length(links)
+
+for (i in 1:length(links)) {
+  try({
+    htxt = read_html(links[i])
+    comments = html_nodes(htxt, '#articleBodyContents')
+    # repair_encoding(html_text(comments), from='utf-8')
+    get_news = repair_encoding(html_text(comments))
+    news[i] = str_trim(get_news)
+  }, silent = F)
+}
+
+# 
+# for (i in length(news)) {
+#   if (is.null(news[[i]][1])) next
+#   }
+
+for (i in length(links)){
+  h= read_html(links[i])
+  hh = html_nodes(h,'#articleBodyContents' )
+  rr = repair_encoding(html_text(hh))
+  ch = html_children(hh)
+  for (k in 1:length(ch)) {
+    chtxt = html_text(ch[k])
+    if (chtxt == "") next
+    rr = stri_replace_all(rr,"",fixed=html_text(ch[k]))
+    news[i] = rr
+  }
+}
+
+head(news)
+
+for (i in 1:length(news)) {
+  news[[i]][1] = gsub('[[:alnum:]]+@[[:alnum:].]+', '', news[[i]][1])
+  news[[i]][1] = gsub("[[:cntrl:]]", "", news[[i]][1])
+  news[[i]][1] = gsub("\\s{2,}", " ", news[[i]][1])
+  news[[i]][1] = gsub("▶.*","",news[[i]][1])
+  news[[i]][1] = gsub("[[:punct:]]", "", news[[i]][1])  
+  news[[i]][1] = gsub("flash 오류를 우회하기 위한 함수 추가function flashremoveCallback", "", news[[i]][1])
+  news[[i]][1] = gsub("\\s{2,}", " ", news[[i]][1])
+  # news[[i]][1] = gsub("<.*>", "", enc2native(news[[i]][1]))
+}
+
+head(news)
+wc = sapply(news, extractNoun, USE.NAMES = F)
+
+nouns = sapply(wc, function(x) {
+  Filter(function(y='') { nchar(y) <= 4 && nchar(y) >= 2 && is.hangul(y) }, x)
+})
+
+wc1 = table(unlist(nouns))
+wc1
+
+#상위 100개 추출
+wc2 = head(sort(wc1, decreasing = T), 100)
+wc2
+wordcloud(names(wc2), freq=wc2, scale=c(2,1), rot.per=0.25, 
+          min.freq = 15, random.order = F, random.color = T, colors = pal)
+
+
+
+ul = unlist(wc2)
+ul = ul[nchar(ul) <5 & nchar(ul) > 1]
+head(ul)
+ul
+ul = table(ul)
+ul
+
+pal = brewer.pal(9, "Set1")
+wordcloud(names(wc2), freq=ul, rot.per=0.25, 
+          min.freq = 2, random.order = F, random.color = T, colors = pal)
+
+# 연관성 ##########
+
+# 연관성 분석 ####
+
+nouns = sapply(wc, unique)
+nouns[1:18]
+
+
+for (i in length(news)) {
+  if (is.null(news[[i]][1])) next
+  }
+
+
+wtrans = as(nouns, "transactions")
+
+wtrans
+class(wtrans)
+rules = apriori(wtrans, parameter = list(supp=0.9, conf=0.5))
+rules
+inspect(sort(rules))
+
+subrules2 <- head(sort(rules, by="lift"), 40)
+ig <- plot( subrules2, method='graph', control=list(type='items'))
+
+subrules3 <- head(sort(rules, by='confidence'), 40)
+ig <-plot(subrules3, method='graph', control=list(type='items'))
+
+ig_df <- get.data.frame( ig, what='both')
+visNetwork(
+  nodes = data.frame(id = ig_df$vertices$name,
+                     value = ig_df$vertices$support, ig_df$vertices),
+  edges = ig_df$edges
+) %>% visEdges(ig_df$edges) %>% visOptions( highlightNearest = T)

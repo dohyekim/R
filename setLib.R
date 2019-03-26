@@ -27,8 +27,15 @@ data = dplyr::rename(data, stuno=학번, cls=반, gen=성별, kor=국어, eng=�
 
 # text mining ####
 library(tm)
+library(KoNLP)
 
 # Word Cloud ####
 library(RccolorBrewer)
 library(wordcloud)
 
+# 연관성
+library(arules); library(igraph); library(combinat)
+library(arulesViz); library(visNetwork)
+
+#Naver ####
+library(rvest); library(httr); library(stringr); library(dplyr)

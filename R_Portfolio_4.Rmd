@@ -1,0 +1,127 @@
+---
+title: "Naver"
+author: "김도혜"
+date: "2019년 4월 9일"
+output: html_document
+---
+
+
+```{r, warning=FALSE,  message = FALSE}
+library(rvest)
+library(httr)
+library(stringr)
+library(dplyr)
+library(KoNLP)
+library(RColorBrewer)
+library(wordcloud)
+library(arules) 
+library(igraph) 
+library(combinat)
+library(arulesViz)
+library(visNetwork)
+library(stringi)
+
+```
+
+#### **크롤하기**
+
+```{r, warning=FALSE,  message = FALSE}
+newsurl = 'https://news.naver.com/main/home.nhn'
+html = read_html(newsurl)
+links = html_attr(html_nodes(html,'div#main_content li a'), 'href')
+links = links[!is.na(links)]
+news = list()
+length(links)
+
+for (i in 1:length(links)) {
+  try({
+    htxt = read_html(links[i])
+    comments = html_nodes(htxt, '#articleBodyContents')
+    # repair_encoding(html_text(comments), from='utf-8')
+    get_news = repair_encoding(html_text(comments))
+    news[i] = str_trim(get_news)
+  }, silent = F)
+}
+
+```
+
+
+
+#### **불용어 제거****
+```{r, warning=FALSE,  message = FALSE}
+removeStopword = function(t) {
+  t = gsub('[[:alnum:]]+@[[:alnum:].]+', '', t) 
+  t = gsub("[[:cntrl:]]", "", t) 
+  t = gsub("\\s{2,}", " ", t)
+  t = gsub("▶.*","", t)
+  t = gsub("[[:punct:]]", "", t)
+  t = gsub("flash 오류를 우회하기 위한 함수 추가function flashremoveCallback", "",t) 
+}
+for (i in 1:length(news)) {
+  if(is.null(news[[i]][1])) next
+  news[[i]][1] = removeStopword(news[[i]][1])
+}
+
+cc = c()
+for (j in 1:length(news)) {
+  if (length(news[[j]]) == 0) next
+  cc = c(cc, news[j])
+}
+
+```
+
+
+#### **명사만 뽑아내기**
+
+```{r, warning=FALSE,  message = FALSE}
+wc = sapply(cc, extractNoun, USE.NAMES = F)
+
+nouns = sapply(wc, function(x) {
+  Filter(function(y='') { nchar(y) <= 4 && nchar(y) >= 2 && is.hangul(y) }, x)
+})
+
+# 빈도수
+wc1 = table(unlist(nouns))
+
+#상위 100개 추출
+wc2 = head(sort(wc1, decreasing = T), 100)
+
+head(wc2)
+```
+
+
+#### **wordcloud 작도**
+
+```{r, warning=FALSE,  message = FALSE}
+pal = brewer.pal(9, "Set1")
+wordcloud(names(wc2), freq=wc2, scale=c(2,1), rot.per=0.25,
+          min.freq = 15, random.order = F, random.color = T, colors = pal)
+```
+
+
+#### **연관성 분석 **
+```{r, message = FALSE, warning=FALSE}
+
+wc = sapply(cc, extractNoun, USE.NAMES = F)
+
+
+nouns = unique(wc)
+nouns = sapply(wc, unique)
+nouns1 = sapply(nouns, function(x) {
+  Filter(function(y='') { nchar(y) <= 4 && nchar(y) >= 2 && is.hangul(y) }, x)
+})
+
+
+
+wtrans = as(nouns1, "transactions")
+rules = apriori(wtrans, parameter = list(supp=0.2, conf=0.5))
+
+subrules2 <- head(sort(rules, by="lift"), 40)
+ig <- plot( subrules2, method='graph', control=list(type='items'))
+
+subrules3 <- head(sort(rules, by='confidence'), 40)
+ig <-plot(subrules3, method='graph', control=list(type='items'))
+
+```
+
+
