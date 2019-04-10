@@ -21,16 +21,16 @@ library(stringi)
 library(sqldf)
 library(RMySQL)
 # 
-options(encoding = 'utf-8')
-data = read.csv("data/성적.csv")
-data = dplyr::rename(data, stuno=학번, cls=반, gen=성별, kor=국어, eng=영어, math=수학, sci=과학, art=예체)
+
+load("data/data.rda")
+data
 
 # text mining ####
 library(tm)
 library(KoNLP)
 
 # Word Cloud ####
-library(RccolorBrewer)
+library(RColorBrewer)
 library(wordcloud)
 
 # 연관성
@@ -39,3 +39,6 @@ library(arulesViz); library(visNetwork)
 
 #Naver ####
 library(rvest); library(httr); library(stringr); library(dplyr)
+
+# 통계
+library(psych)

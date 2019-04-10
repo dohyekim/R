@@ -1,6 +1,7 @@
 # data ####
 
 data = read.csv('data/성적.csv')
+data
 #data = dplyr::rename(data, stuno=학번, cls=반, gen=성별, kor=국어, eng=영어, sci=과학, art=예체, avg=평균, grade=학점)
 
 data = dplyr::rename(data, stuno=학번, cls=반, gen=성별, kor=국어, eng=영어, sci=과학, art=예체)
@@ -1851,7 +1852,8 @@ for (i in 1:length(news)) {
 
 head(news)
 wc = sapply(news, extractNoun, USE.NAMES = F)
-
+length(w)
+wc
 nouns = sapply(wc, function(x) {
   Filter(function(y='') { nchar(y) <= 4 && nchar(y) >= 2 && is.hangul(y) }, x)
 })
@@ -1881,21 +1883,27 @@ wordcloud(names(wc2), freq=ul, rot.per=0.25,
 # 연관성 ##########
 
 # 연관성 분석 ####
+wc = sapply(news, extractNoun, USE.NAMES = F)
+length(w)
+wc
+nouns = sapply(wc, function(x) {
+  Filter(function(y='') { nchar(y) <= 4 && nchar(y) >= 2 && is.hangul(y) }, x)
+})
 
-nouns = sapply(wc, unique)
+nouns = sapply(nouns, unique)
 nouns[1:18]
-
+head(nouns)
 
 for (i in length(news)) {
-  if (is.null(news[[i]][1])) next
+  if (is.null(news[i][[1]])) {
+    news[i] = NULL
   }
-
-
+}
 wtrans = as(nouns, "transactions")
 
 wtrans
 class(wtrans)
-rules = apriori(wtrans, parameter = list(supp=0.9, conf=0.5))
+rules = apriori(wtrans, parameter = list(supp=0.2, conf=0.5))
 rules
 inspect(sort(rules))
 
@@ -1911,3 +1919,205 @@ visNetwork(
                      value = ig_df$vertices$support, ig_df$vertices),
   edges = ig_df$edges
 ) %>% visEdges(ig_df$edges) %>% visOptions( highlightNearest = T)
+
+
+# 도수/상대도수 #########
+data
+
+table(data$cls)
+n.gen = table(data$gen)       # 도수
+n.gen
+p.gen = prop.table(n.gen) #n., p.은 그냥 변수 이름 # 상대 도수
+p.gen
+
+#분할표 ####
+
+rt.gen = rbind(n.gen, p.gen)
+rt.gen
+ct.gen = cbind(n.gen, p.gen)
+ct.gen 
+colnames(ct.gen) = c('도수', '상대도수')
+ct.gen
+ct.gen = addmargins(ct.gen, margin = 1)  # 1: 마지막 행에만 Sum 추가 (즉, 라인별 sum은 제외)
+# 옵션에 (... = 1) 있으면 행을 의미
+ct.gen
+t.gen_cls = table(data$gen, data$cls) # table(행, 열)
+t.gen_cls
+p.gen_cls = prop.table(t.gen_cls) # 상대도수
+p.gen_cls
+barplot(p.gen, main='성별', xlab="gender", ylab='%', 
+          col=c("red", "blue"), ylim=c(0, 0.7), legend = rownames(p.gen))
+barplot(p.gen_cls, main='성별', xlab="gender", ylab='%', col=c("green", "blue"), 
+          ylim=c(0, 0.2), legend = rownames(p.gen_cls), beside = T)
+barplot(p.gen_cls, main='성별', xlab="gender", ylab='%', col=c("green", "blue"), 
+        ylim=c(0, 0.2), legend = rownames(p.gen_cls), beside = T)
+#beside=T는 변수(남/여)가 옆으로 나란히 보이게 한다는 뜻
+
+
+
+
+library(dplyr)
+# n() 빈도수(여기서는 학생수) 구하는 함수
+data %>% group_by(cls) %>% summarise(m = mean(kor), n = n())
+
+#절사평균 ####
+t = c(20, 70, 60, 78, 69, 72, 79, 75, 65, 99)
+t2 = c(70, 60, 78, 69, 72, 79, 75, 65)
+mean(t); # 68.7 
+mean(t2) # 71
+mean(t, trim=0.10) # 한 쪽당 10퍼센트를 뺐기 때문에 trim=0.10 주의!!! 
+
+# 얘로 절사평균 구할지 그냥 평균 구할지 정할 수 있다 ####
+boxplot(t)                  # cf.  boxplot(kor~cls, data=data)
+stem(t, scale = 2) #scale=2 :두 자리(십의 자리) 기준으로 (십의 자리 수를 줄기로) 잡아줘
+
+# 혹은 분산/표준편차가 너무 클 때 절사평균
+
+var(t);  # 402
+var(t2); # 41.71429
+sd(t); # 20.06683 (평균으로부터 20점이나 떨어져있다는 뜻 --> 너무 많이 떨어져 있다. --> 극한값)
+sd(t2) # 6.45866
+
+summary(t)
+IQR(t)  # 11.25         # Q3 - Q1
+
+summary(t2)
+IQR(t2) # 7.75 
+# 왜도 : 평균이 중앙값을 기준으로 치우친 정도 ####
+# 그래프 보는 법 (양수/음수인지) 중요!! 꼬리가 어느쪽에 있는ㄴ가(오른쪽 --> 음수)
+# 왜도(Skewness) : 대칭성 측정
+range(t)
+min(t)
+max(t)
+hist(t, breaks = 10)
+
+library(psych)
+skew(t)  
+
+# 첨도: 정규 분포를 기준으로 얼마나 뾰족한지 ####
+kurtosi(t)    # psych
+# 정규분포 보다 뾰족(양수), 완만(음수)
+
+# 조화 평균 ####
+library(psych)
+harmonic.mean(c(100, 50))
+
+# 기하 평균 ####
+library(psych)
+gmdata = c(1100/1000, 1320/1100, 1122/1320) # 현재 / 작년 --> 작년대비 성장
+geometric.mean(gmdata) - 1
+
+# 가중 평균 ####
+data2 = data %>% filter(stuno < 10300 | stuno > 30000) %>%
+  group_by(cls) %>% summarise(m = mean(kor), n = n())
+w = data2$n / sum(data2$n)
+
+# 가중평균 계산
+weighted.mean(data2$m, w)
+# cf. mean(data2$m)
+
+
+load("data/data.rda")
+data
+options(encoding = 'utf-8')
+data
+save(data, file="data/data.rda")
+
+
+# 검정 #####
+library('dplyr')
+load("data/data.rda")data
+
+#1. 데이터 준비
+# `죽반과 매반의 수학성적은 차이가 없다` 라는 가설을 검증하시오.
+jmmath = data %>% filter(cls %in% c('죽', '매')) %>% select (cls, math)
+head(jmmath)
+jmmath$cls = factor(jmmath$cls, levels=c('죽', '매'), labels=c('죽', '매'))
+jmmath$cls
+
+#2. 데이터 확인
+library('psych')
+orgpar = par(no.readonly = T)  
+describeBy(jmmath$math, jmmath$cls, mat=T)
+boxplot(jmmath$math~jmmath$cls)
+layout(matrix(c(1,1,2,3), 2, 2, byrow=T))
+boxplot(jmmath$math~jmmath$cls)
+hist(jmmath$math[jmmath$cls == '죽'])
+hist(jmmath$math[jmmath$cls == '매'])
+par(orgpar)
+
+# 3. 등분산 검정(분산의 동질성)
+var.test(jmmath$math ~ jmmath$cls, data=jmmath)
+#p-value가 0.05 미만이면 이분산 (p-value는 동질한 정도)
+#(약 87% 동일)
+
+# 4. t-test 수행
+t.test(jmmath$math ~ jmmath$cls, data=jmmath,
+       alternative = c("two.sided"),
+       var.equal = T,
+       conf.level = 0.95)
+
+#5. 결과 그래프
+
+# # dnorm(확률 밀도 함수), pnorm(누적분포함수:점수), qnorm(누적분포함수:확률)
+# rnorm(정규분포)
+
+#죽반
+mu=63.46
+se=2.144661
+#1000명의 학생 대상으로 평균이 mu, 표준편차가 se인 정규분포 데이터(고르게)
+rn=sort(rnorm(1000, mu, se))
+plot(rn, dnorm(rn, mu, se), col="black", type="l", main="평균점수", xlim=c(50,80), ylim=c(0,0.25))
+abline(v=mu, col="red", lty=5)
+par(new=T)
+
+#매반
+mu=63.84
+se=2.114145
+rn=sort(rnorm(1000, mu, se))
+plot(rn, dnorm(rn, mu, se), col="blue", type="l", main="평균점수", xlim=c(50, 80), ylim=c(0,0.25))
+abline(v=mu, col="red", lty=5)
+
+# 귀무가설이 맞을 확률이 90%
+
+# 시험2 ####### 4개반 수학성적의 유사도(동질의 정도)를 분석하시오.
+m = data %>% select(cls, math)
+m
+
+  ####### 답
+# 1. 데이터 준비
+library('dplyr')
+mnkor = data %>% filter(cls %in% c('매', '난')) %>% select(cls, kor)
+head(mnkor)
+mnkor$cls = factor(mnkor$cls, levels=c('매','난'), labels=c('매', '난'))
+mnkor$cls
+
+# 2. 데이터 확인 (기술통계 + 그래프)
+describeBy(mnkor$kor, mnkor$cls, mat = T)
+orgpar = par(no.readonly = T)  
+boxplot(mnkor$kor ~ mnkor$cls)
+layout(matrix(c(1,1,2,3), 2, 2, byrow = T))
+boxplot(mnkor$kor ~ mnkor$cls)
+hist(mnkor$kor[mnkor$cls == '매'])
+hist(mnkor$kor[mnkor$cls == '난'])
+par(orgpar)
+
+# 3. 등분산 검정
+var.test(mnkor$kor ~ mnkor$cls, data = mnkor)
+
+# 4. t-test 수행
+t.test(mnkor$kor ~ mnkor$cls, data = mnkor,
+       alternative = c("two.sided"),
+       var.equal = T,                 # 등분산검증의 p-value < 0.05 이면 False로!
+       conf.level = 0.95)
+
+# 5. 결과 그래프 
+mu = 59.4; se = 1.975140; rn = sort(rnorm(1000, mu, se))
+plot(rn, dnorm(rn, mu, se), col='green', type = 'l', main = '평균점수',
+     xlim = c(50, 80), ylim = c(0, 0.25)) 
+abline(v=mu, col="green", lty=5)
+par(new = T)  
+mu = 64.28; se = 1.952381; rn = sort(rnorm(1000, mu, se))
+plot(rn, dnorm(rn, mu, se), col='red', type = 'l', main = '평균점수',
+     xlim = c(50, 80), ylim = c(0, 0.25))
+abline(v=mu, col="red", lty=5)

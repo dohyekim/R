@@ -1,0 +1,73 @@
+---
+title: "통계 기반 데이터 분석"
+author: "김도혜"
+date: "2019년 3월 9일"
+output: html_document
+---
+
+
+```{r, warning=FALSE,  message = FALSE}
+library('dplyr')
+library('psych')
+load("data/data.rda")
+head(data)
+```
+
+
+## 1.'죽반과 매반의 수학성적은 차이가 없다' 라는 가설을 검증하시오.
+
+#### 1.데이터 전처리 
+```{r}
+jmmath = data %>% filter(cls %in% c('죽', '매')) %>% select (cls, math)
+head(jmmath)
+
+jmmath$cls = factor(jmmath$cls, levels=c('죽', '매'), labels=c('죽', '매'))
+head(jmmath$cls)
+```
+
+
+#### 2. 데이터 확인
+```{r}
+describeBy(jmmath$math, jmmath$cls, mat=T)
+```
+
+#### 3. 데이터 보기
+```{r}
+orgpar = par(no.readonly = T)  
+
+layout(matrix(c(1,1,2,3), 2, 2, byrow=T))
+boxplot(jmmath$math~jmmath$cls)
+hist(jmmath$math[jmmath$cls == '죽'])
+hist(jmmath$math[jmmath$cls == '매'])
+
+par(orgpar)
+```
+
+#### 4. 등분산 검정 
+```{r}
+var.test(jmmath$math ~ jmmath$cls, data=jmmath)
+#p-value가 0.05 미만이면 이분산 (p-value는 동질한 정도)
+#(약 87% 동일)
+```
+##### 검정 결과 두 값은 약 87% 동일하다.
+
+##### 5. 결과 그래프
+```{r}
+
+#죽반
+mu=63.46
+se=2.144661
+rn=sort(rnorm(1000, mu, se))
+plot(rn, dnorm(rn, mu, se), col="black", type="l", main="평균점수", xlim=c(50,80), ylim=c(0,0.25))
+abline(v=mu, col="red", lty=5)
+
+par(new=T)
+
+#매반
+mu=63.84
+se=2.114145
+rn=sort(rnorm(1000, mu, se))
+plot(rn, dnorm(rn, mu, se), col="blue", type="l", main="평균점수", xlim=c(50, 80), ylim=c(0,0.25))
+abline(v=mu, col="red", lty=5)
+
+```
