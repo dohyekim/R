@@ -1,7 +1,7 @@
 ---
 title: "통계 기반 데이터 분석"
 author: "김도혜"
-date: "2019년 3월 9일"
+date: "2019년 3월 8일"
 output: html_document
 ---
 
@@ -9,14 +9,17 @@ output: html_document
 ```{r, warning=FALSE,  message = FALSE}
 library('dplyr')
 library('psych')
+library('ggplot2')
+library('gridExtra')
 load("data/data.rda")
 head(data)
 ```
 
 
-## 1.'죽반과 매반의 수학성적은 차이가 없다' 라는 가설을 검증하시오.
+### 1.'죽반과 매반의 수학성적은 차이가 없다' 라는 가설을 검증하시오.
 
 #### 1.데이터 전처리 
+
 ```{r}
 jmmath = data %>% filter(cls %in% c('죽', '매')) %>% select (cls, math)
 head(jmmath)
@@ -26,39 +29,47 @@ head(jmmath$cls)
 ```
 
 
+
 #### 2. 데이터 확인
+
 ```{r}
 describeBy(jmmath$math, jmmath$cls, mat=T)
 ```
 
+
 #### 3. 데이터 보기
+
 ```{r}
 orgpar = par(no.readonly = T)  
 
 layout(matrix(c(1,1,2,3), 2, 2, byrow=T))
 boxplot(jmmath$math~jmmath$cls)
-hist(jmmath$math[jmmath$cls == '죽'])
-hist(jmmath$math[jmmath$cls == '매'])
+hist(jmmath$math[jmmath$cls == '죽'], xlab="점수", main="'죽'반 수학 성적");
+hist(jmmath$math[jmmath$cls == '매'], xlab="점수", main="'매'반 수학 성적");
 
 par(orgpar)
 ```
 
+
 #### 4. 등분산 검정 
+
 ```{r}
 var.test(jmmath$math ~ jmmath$cls, data=jmmath)
-#p-value가 0.05 미만이면 이분산 (p-value는 동질한 정도)
-#(약 87% 동일)
+
 ```
+
 ##### 검정 결과 두 값은 약 87% 동일하다.
 
-##### 5. 결과 그래프
+
+#### 5. 최종 결과 그래프
+
 ```{r}
 
 #죽반
 mu=63.46
 se=2.144661
 rn=sort(rnorm(1000, mu, se))
-plot(rn, dnorm(rn, mu, se), col="black", type="l", main="평균점수", xlim=c(50,80), ylim=c(0,0.25))
+plot(rn, dnorm(rn, mu, se), col="red", type="l", main="국어 평균점수", xlim=c(50,80), ylim=c(0,0.25))
 abline(v=mu, col="red", lty=5)
 
 par(new=T)
@@ -67,7 +78,102 @@ par(new=T)
 mu=63.84
 se=2.114145
 rn=sort(rnorm(1000, mu, se))
-plot(rn, dnorm(rn, mu, se), col="blue", type="l", main="평균점수", xlim=c(50, 80), ylim=c(0,0.25))
-abline(v=mu, col="red", lty=5)
+plot(rn, dnorm(rn, mu, se), col="blue", type="l", main="국어 평균점수", xlim=c(50, 80), ylim=c(0,0.25))
+abline(v=mu, col="blue", lty=5)
 
 ```
+
+
+##### 따라서 가설은 참이다. (차이가 없다고 할 수 있다. 통계적으로 유의하지 않다.)
+
+
+
+### 2. 4개반 수학성적의 유사도(동질의 정도)를 분석하시오.
+
+#### 1. 데이터 확인
+
+```{r}
+describeBy(data$math, data$cls, mat=T)
+```
+
+
+#### 2. 데이터 보기
+
+```{r}
+box = ggplot(data, aes(x=cls, y=math)) +
+  geom_boxplot(outlier.color="blue") +
+  ggtitle('반별 수학 성적') 
+
+
+hist = ggplot(data, aes(math)) +
+  geom_histogram(aes(fill=cls),
+                 binwidth=10,
+                 col="black")+
+      labs(title = '반별 수학 성적')+
+      facet_grid(. ~cls)+
+      scale_fill_discrete(name = "class")
+
+grid.arrange(box, hist, ncol=2)
+```
+
+
+#### 3. 등분산 검정
+
+```{r}
+bartlett.test(data$math ~ data$cls, data=data)
+```
+
+
+##### 검정 결과 약 88.93% 동질하다.
+
+
+#### 4. ANOVA 분석 (등분산)
+
+```{r}
+anv = aov(data$math ~ data$cls, data=data)
+summary(anv)
+```
+
+
+##### 가설이 99.5% 맞다.
+
+
+#### 5. 사후분석
+
+```{r}
+TukeyHSD(anv)
+```
+
+
+#### 6. 사후분석 결과 그래프
+
+```{r}
+plot(TukeyHSD(anv))
+```
+
+
+##### 매반과 난반의 차이가 가장 크다.
+
+
+#### 7. 최종 결과 그래프
+```{r}
+draw = function(mu, se, col) {
+  rn = sort(rnorm(1000, mu, se))
+  plot(rn, dnorm(rn, mu, se), col=col, type = 'l', main='수학 평균점수',
+       xlim = c(50, 80), ylim = c(0, 0.25))
+  abline(v=mu, col=col, lty=5)
+  par(new = T)
+}
+
+draw(63.59167, 2.020535, "green")
+draw(63.08333, 2.028632, "red")
+draw(63.84167, 2.114145, "blue")
+draw(63.46667, 2.144661, "black")
+legend('topright',
+       legend=c('국', '난', '매', '죽'),
+       pch=8,
+       col=c('green', 'red', 'blue', 'black'),
+       bg='gray')
+
+```
+

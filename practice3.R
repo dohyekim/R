@@ -2042,8 +2042,9 @@ describeBy(jmmath$math, jmmath$cls, mat=T)
 boxplot(jmmath$math~jmmath$cls)
 layout(matrix(c(1,1,2,3), 2, 2, byrow=T))
 boxplot(jmmath$math~jmmath$cls)
-hist(jmmath$math[jmmath$cls == '죽'])
-hist(jmmath$math[jmmath$cls == '매'])
+hist(jmmath$math[jmmath$cls == '죽'], xlab="점수", main="죽 반의 수학 성적");
+?hist
+hist(jmmath$math[jmmath$cls == '매'], xlab="점수", main="매 반의 수학 성적");
 par(orgpar)
 
 # 3. 등분산 검정(분산의 동질성)
@@ -2121,3 +2122,170 @@ mu = 64.28; se = 1.952381; rn = sort(rnorm(1000, mu, se))
 plot(rn, dnorm(rn, mu, se), col='red', type = 'l', main = '평균점수',
      xlim = c(50, 80), ylim = c(0, 0.25))
 abline(v=mu, col="red", lty=5)
+
+
+# 시험 2번 ####
+# 4개반 수학성적의 유사도(동질의 정도)를 분석하시오.
+
+#귀무가설: 4개반 수학성적은 동일하다.
+
+library('psych')
+library('ggplot2')
+data
+
+describeBy(data$math, data$cls, mat=T)
+
+library('gridExtra')
+box = ggplot(data, aes(x=cls, y=math)) +
+  geom_boxplot(outlier.color="blue") +
+  ggtitle('반별 수학 성적') 
+
+
+hist = ggplot(data, aes(math)) +
+  geom_histogram(aes(fill=cls),
+                 binwidth=10,
+                 col="black")+
+      labs(title = '반별 수학 성적')+
+      facet_grid(. ~cls)+
+      scale_fill_discrete(name = "class")
+
+grid.arrange(box, hist, ncol=2)
+
+
+# 등분산 검정
+
+bartlett.test(data$math ~ data$cls, data=data)
+# 88.93% 동질
+
+# ANOVA 분석 (등분산)
+anv = aov(data$math ~ data$cls, data=data)
+anv
+summary(anv)
+# Pr이 0.995로 가설이 맞다.
+
+# 사후분석
+TukeyHSD(anv)
+
+# 사후분석 결과 그래프 
+plot(TukeyHSD(anv))
+# 매반과 난반의 차이가 가장 크다.
+
+# 결과 그래프 
+
+mu = 59.4; se = 1.975140; rn = sort(rnorm(1000, mu, se))
+plot(rn, dnorm(rn, mu, se), col='green', type = 'l', main = '평균점수',
+     xlim = c(50, 80), ylim = c(0, 0.25)) 
+abline(v=mu, col="green", lty=5)
+
+
+draw = function(mu, se, col) {
+  rn = sort(rnorm(1000, mu, se))
+  plot(rn, dnorm(rn, mu, se), col=col, type = 'l', main='수학 평균점수',
+       xlim = c(50, 80), ylim = c(0, 0.25))
+  abline(v=mu, col=col, lty=5)
+  par(new = T)
+}
+
+plot(x = smdt$stuno, y=smdt$Korean,
+     col="#00FF00",
+     cex=3,
+     pch=8,
+     xlim=xl,
+     ylim=yl,
+     xlab='학번', 
+     ylab='국어,수학',
+     main='우리반 국어/수학 성적')
+
+# dnorm(확률 밀도 함수), pnorm(누적분포함수:점수), qnorm(누적분포함수:확률)
+# rnorm(정규분포)
+
+draw(63.59167, 2.020535, "green")
+draw(63.08333, 2.028632, "red")
+draw(63.84167, 2.114145, "blue")
+draw(63.46667, 2.144661, "black")
+legend('topright',
+       legend=c('국', '난', '매', '죽'),
+       pch=8,
+       col=c('green', 'red', 'blue', 'black'),
+       bg='gray')
+# 상관관계 #########
+library(ggplot2)
+
+# lm = linear model
+abline(lm(cty ~ displ, data=cdata), col='red') 
+
+# 이상치 검정 (lm선을 기준으로 정규분포의 정도 측정)
+shapiro.test(lmdata$residuals)  
+# --> #빨간 선을 기준으로 대칭을 이루는가
+
+  
+  #별이 많을수록 영향이 높다
+  
+install.packages('car')
+
+
+data$avg = apply(data[, 4:8], MARGIN = 1, FUN = mean)
+library(dplyr)
+library(psych)
+s = data %>% filter(cls == '매') %>% select(avg)
+t.test(s, alternative = c("two.sided"),    # cf. c("greater"), c("less")
+       mu=65, conf.level = 0.95)
+
+
+# 전교생의 국어성적과 영어성적에 대한 상관분석(Correlation)을 수행하시오.#####
+data %>% select(kor, eng) -> kedata
+kedata
+head(kedata)
+
+describe(kedata)
+
+
+pairs.panels(kedata)  
+#상관계수가 -0.02로 두 변수 간의 선형 관계가 거의 없다.
+
+cor(kedata, use="complete.obs",
+    method = c("pearson"))
+plot(kor~eng, data=kedata)
+abline(lm(kor ~ eng, data=kedata), col='red')
+
+# 4. mpg데이터의 displ, cyl, trans, cty, hwy 중 ####
+# 1999년과 2008년 두 해의 고객 만족도가 0과 1이라고 했을 때,
+# 어떤 요소가 만족도에 많은 기여를 했는지 로지스틱 회귀분석하시오. ####
+
+library(ggplot2)
+mpg = ggplot2::mpg
+head(mpg)
+??mpg
+#배기량
+mpg$trans
+# 수동 < 자동일 때 만족도가 1이 됐을 것
+unique(mpg$trans)
+
+#연도
+mpg$year
+unique(mpg$year)
+?mutate
+
+mpg %>% 
+  mutate(trs = ifelse(substr(trans, 1, 4) == 'auto',1,0),
+               yr = ifelse(year == 1999, 0, 1)) %>%
+  select(trs, yr, displ, cyl, cty, hwy) -> mpgdata
+
+head(mpgdata)
+
+describe(mpgdata)
+pairs.panels(mpgdata) #displ과 cyl 양의 강한 상관관계, cyl, cty 강한 음의 상관관계, cyl, hwy 음의 상관관계, cty와 hwy 강한 양의 상관관계
+
+#분석
+#glm -> 모델 반들기
+glmdata = glm(yr~trs+displ+cyl+cty+hwy, family=binomial, data=mpgdata)
+summary(glmdata)
+# displ과 hwy영향이 있음, 양의 상관관계
+
+#coefficients(기울기+절편)와 confint(신뢰구간)로 LOR(Log Odd Ratio) 구하기
+#intercept = 절편
+#efficient = 기울기
+#LOR = 
+exp(cbind(LOR = coef(glmdata), confint(glmdata)))
+
+#trs/displ/hwy는 정의 영향, cyl, cty는 부의 영향을 미친다.

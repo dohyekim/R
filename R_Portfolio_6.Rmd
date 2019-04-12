@@ -1,0 +1,108 @@
+---
+title: "통계 기반 데이터 분석"
+author: "김도혜"
+date: "2019년 3월 8일"
+output: html_document
+---
+
+```{r, warning=FALSE,  message = FALSE}
+library(dplyr)
+library(psych)
+library(ggplot2)
+load("data/data.rda")
+head(data)
+head(ggplot2::mpg)
+```
+
+
+### 3. 전교생의 국어성적과 영어성적에 대한 상관분석(Correlation)을 수행하시오.
+
+#### 1.데이터 가져오기
+
+```{r}
+data %>% select(kor, eng) -> kedata
+head(kedata)
+```
+
+#### 2. 기술통계 확인
+
+```{r}
+describe(kedata)
+```
+
+
+#### 3. 그래프
+
+```{r}
+pairs.panels(kedata)  
+```
+
+##### 상관계수가 -0.02로 두 변수 간의 선형 관계가 거의 없다.
+
+#### 4. 상관분석
+
+```{r}
+cor(kedata, use="complete.obs",
+    method = c("pearson"))
+```
+
+#### 5. 시각화
+```{r}
+plot(kor~eng, data=kedata)
+abline(lm(kor ~ eng, data=kedata), col='red')
+```
+
+#### 결론: 상관 관계가 없다.
+
+
+### 4. mpg데이터의 displ, cyl, trans, cty, hwy 중 1999년과 2008년 두 해의 고객 만족도가 0과 1이라고 했을 때, 어떤 요소가 만족도에 많은 기여를 했는지 로지스틱 회귀분석하시오.
+
+#### 1. 데이터 준비
+
+```{r}
+# type of transmission
+mpg$trans
+unique(mpg$trans)
+
+# year
+mpg$year
+unique(mpg$year)
+
+# type or transmission, year, engine displacement, number of cylinders, cty, hwy
+mpg %>% 
+  mutate(trs = ifelse(substr(trans, 1, 4) == 'auto',1,0),
+               yr = ifelse(year == 1999, 0, 1)) %>%
+  select(trs, yr, displ, cyl, cty, hwy) -> mpgdata
+```
+
+##### 수동 차량보다는 자동 차량일 때 만족도가 1일 것이다.
+
+#### 2. 데이터 확인
+
+```{r}
+describe(mpgdata)
+pairs.panels(mpgdata)
+```
+
+##### displ과 cyl, cty와 hwy간 양의 상관관계를 보이고,
+##### cyl과 cty, cyl와 hwy가 음의 상관관계를 보인다.
+
+#### 3. 분석하기
+
+```{r}
+glmdata = glm(yr~trs+displ+cyl+cty+hwy, family=binomial, data=mpgdata)
+summary(glmdata)
+```
+
+##### displ과 hwy가 양의 상관관계를 보이며 만족도에 영향을 미쳤음을 알 수 있다.
+
+#### 4. LOR(Log Odds Ratio) 구하기
+
+```{r}
+#intercept = 절편
+#efficient = 기울기
+
+exp(cbind(LOR = coef(glmdata), confint(glmdata)))
+```
+
+##### trs,displ,hwy는 정의 영향, cyl, cty는 부의 영향을 미친다.
